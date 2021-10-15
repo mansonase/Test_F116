@@ -1,3 +1,46 @@
 <resources>
     <string name="app_name">Test F116</string>
+    
+    
+    
+    <string name="export">Export</string>
+    <string name="header">Header</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="pass">Pass</string>
+    <string name="p">P</string>
+    <string name="fail">Fail</string>
+    <string name="f">F</string>
+    <string name="order_number">Order Number :</string>
+    <string name="lot">Lot</string>
+    <string name="producing_time">Producing Time</string>
+    <string name="year">Year</string>
+    <string name="month">Month</string>
+    <string name="day">Day</string>
+    <string name="testing_department">Test Department</string>
+    <string name="ipqc">IPQC</string>
+    <string name="qa">QA</string>
+    <string name="rd">RD</string>
+    <string name="product_serial_number">Product Serial Number</string>
+    <string name="mac_address">Mac Address</string>
+    <string name="tag">Tag</string>
+    <string name="tag_number">Tag No.</string>
+    <string name="dbm">dBM</string>
+    <string name="rssi">Rssi</string>
+    <string name="current">Current</string>
+    <string name="ma">mA</string>
+    <string name="a">A</string>
+    <string name="voltage">Voltage</string>
+    <string name="v">V</string>
+    <string name="watt">Watt</string>
+    <string name="w">W</string>
+    <string name="wh">WH</string>
+    <string name="power_factor">Power Factor</string>
+    <string name="led_blue_flash">LED Blue Flash</string>
+    <string name="led_blue_on">LED Blue On</string>
+    <string name="led_green_flash">LED Green Flash</string>
+    <string name="led_red_on">LED Red On</string>
+    <string name="result">Result</string>
+    <string name="barcode">Barcode</string>
+
 </resources>
