@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="400dp"
+    android:layout_width="match_parent"
     android:layout_height="400dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/main_white_four_15_word_blue_2"
@@ -55,21 +55,283 @@
         android:layout_height="wrap_content"
         android:text="@string/order_number"
         android:textSize="16dp"
+        android:id="@+id/order_serial_title"
         android:textColor="@color/word_blue"
-        app:layout_constraintTop_toBottomOf="@+id/header_line"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintTop_toTopOf="@+id/order_serial_1"
+        app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/order_serial_1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        android:layout_marginHorizontal="10dp"/>
 
     <EditText
         android:layout_width="50dp"
         android:layout_height="20dp"
         android:id="@+id/order_serial_1"
         android:maxLength="4"
+        android:textSize="16dp"
         android:textColor="@color/word_black"
+        android:inputType="number"
         app:layout_constraintTop_toBottomOf="@+id/header_line"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/order_serial_title"
+        app:layout_constraintEnd_toStartOf="@+id/order_serial_dash_1"
+        app:layout_constraintBottom_toTopOf="@+id/firmware_number"
+        android:background="@drawable/main_white_four_15_word_blue_2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" - "
+        android:textSize="16dp"
+        android:id="@+id/order_serial_dash_1"
+        android:textColor="@color/word_blue"
+        app:layout_constraintTop_toTopOf="@+id/order_serial_1"
+        app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
+        app:layout_constraintStart_toEndOf="@+id/order_serial_1"
+        app:layout_constraintEnd_toStartOf="@+id/order_serial_2"/>
+
+    <EditText
+        android:layout_width="50dp"
+        android:layout_height="20dp"
+        android:id="@+id/order_serial_2"
+        android:maxLength="5"
+        android:textColor="@color/word_black"
+        android:textSize="16dp"
+        android:inputType="number"
+        app:layout_constraintTop_toTopOf="@+id/order_serial_1"
+        app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
+        app:layout_constraintStart_toEndOf="@+id/order_serial_dash_1"
+        app:layout_constraintEnd_toStartOf="@+id/order_serial_dash_2"
         android:background="@drawable/main_white_four_15_word_blue_2"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" - LOT: "
+        android:textSize="16dp"
+        android:id="@+id/order_serial_dash_2"
+        android:textColor="@color/word_blue"
+        app:layout_constraintTop_toTopOf="@+id/order_serial_1"
+        app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
+        app:layout_constraintStart_toEndOf="@+id/order_serial_2"
+        app:layout_constraintEnd_toStartOf="@+id/order_serial_lot"/>
 
+    <EditText
+        android:layout_width="50dp"
+        android:layout_height="20dp"
+        android:id="@+id/order_serial_lot"
+        android:maxLength="2"
+        android:textColor="@color/word_black"
+        android:textSize="16dp"
+        android:inputType="number"
+        app:layout_constraintTop_toTopOf="@+id/order_serial_1"
+        app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
+        app:layout_constraintStart_toEndOf="@+id/order_serial_dash_2"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@drawable/main_white_four_15_word_blue_2"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/firmware_title"
+        android:textColor="@color/word_blue"
+        android:textSize="16dp"
+        android:text="@string/firmware"
+        app:layout_constraintTop_toTopOf="@+id/firmware_number"
+        app:layout_constraintBottom_toBottomOf="@+id/firmware_number"
+        app:layout_constraintEnd_toEndOf="@+id/order_serial_title"/>
+
+    <EditText
+        android:layout_width="50dp"
+        android:layout_height="20dp"
+        android:id="@+id/firmware_number"
+        android:maxLength="2"
+        android:textColor="@color/word_black"
+        android:textSize="16dp"
+        android:inputType="number"
+        app:layout_constraintTop_toBottomOf="@+id/order_serial_1"
+        app:layout_constraintStart_toStartOf="@+id/order_serial_1"
+        app:layout_constraintBottom_toTopOf="@+id/tag_number"
+        android:background="@drawable/main_white_four_15_word_blue_2"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tag_number_title"
+        android:textColor="@color/word_blue"
+        android:textSize="16dp"
+        android:text="@string/tag_number"
+        app:layout_constraintTop_toTopOf="@+id/tag_number"
+        app:layout_constraintBottom_toBottomOf="@+id/tag_number"
+        app:layout_constraintEnd_toEndOf="@+id/firmware_title" />
+
+    <EditText
+        android:layout_width="50dp"
+        android:layout_height="20dp"
+        android:id="@+id/tag_number"
+        android:maxLength="4"
+        android:textColor="@color/word_black"
+        android:textSize="16dp"
+        android:inputType="number"
+        app:layout_constraintTop_toBottomOf="@+id/firmware_number"
+        app:layout_constraintStart_toStartOf="@+id/firmware_number"
+        app:layout_constraintBottom_toTopOf="@+id/producing_time"
+        android:background="@drawable/main_white_four_15_word_blue_2"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/producing_time_title"
+        android:textSize="16dp"
+        android:textColor="@color/word_blue"
+        android:text="@string/producing_time"
+        app:layout_constraintTop_toTopOf="@+id/producing_time"
+        app:layout_constraintBottom_toBottomOf="@+id/producing_time"
+        app:layout_constraintEnd_toEndOf="@+id/tag_number_title"/>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/producing_time"
+        android:textSize="16dp"
+        android:text="2021/10/11"
+        android:paddingEnd="30dp"
+        android:paddingStart="10dp"
+        android:paddingVertical="3dp"
+        android:textColor="@color/word_black"
+        app:layout_constraintTop_toBottomOf="@+id/tag_number"
+        app:layout_constraintStart_toStartOf="@+id/tag_number"
+        app:layout_constraintBottom_toTopOf="@+id/testing_department"
+        android:background="@drawable/blue_frame_arrow_down"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/testing_department_title"
+        android:textSize="16dp"
+        android:text="@string/testing_department"
+        android:textColor="@color/word_blue"
+        app:layout_constraintTop_toTopOf="@+id/testing_department"
+        app:layout_constraintBottom_toBottomOf="@+id/testing_department"
+        app:layout_constraintEnd_toEndOf="@+id/producing_time_title"/>
+
+    <Spinner
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/testing_department"
+        android:background="@drawable/blue_frame_arrow_down"
+        app:layout_constraintTop_toBottomOf="@+id/producing_time"
+        app:layout_constraintStart_toStartOf="@+id/producing_time"
+        app:layout_constraintEnd_toEndOf="@+id/producing_time"
+        app:layout_constraintBottom_toTopOf="@+id/rssi_small"
+        android:paddingVertical="3dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/rssi"
+        android:textColor="@color/word_blue"
+        android:textSize="16dp"
+        app:layout_constraintTop_toTopOf="@+id/rssi_small"
+        app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
+        app:layout_constraintEnd_toEndOf="@+id/testing_department_title" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" - "
+        android:textSize="16dp"
+        android:textStyle="bold"
+        android:id="@+id/rssi_small_sign"
+        android:textColor="@color/word_black"
+        app:layout_constraintTop_toTopOf="@+id/rssi_small"
+        app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
+        app:layout_constraintStart_toStartOf="@+id/testing_department" />
+
+    <EditText
+        android:layout_width="50dp"
+        android:layout_height="20dp"
+        android:id="@+id/rssi_small"
+        android:maxLength="2"
+        android:textColor="@color/word_black"
+        android:textSize="12dp"
+        android:hint="@string/small"
+        android:textColorHint="@color/word_blue"
+        android:paddingStart="5dp"
+        android:inputType="number"
+        app:layout_constraintTop_toBottomOf="@+id/testing_department"
+        app:layout_constraintStart_toEndOf="@+id/rssi_small_sign"
+        app:layout_constraintBottom_toTopOf="@+id/save_button"
+        android:background="@drawable/main_white_four_15_word_blue_2"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" ~ "
+        android:textSize="16dp"
+        android:id="@+id/rssi_dash"
+        android:textColor="@color/word_blue"
+        app:layout_constraintTop_toTopOf="@+id/rssi_small"
+        app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
+        app:layout_constraintStart_toEndOf="@+id/rssi_small"
+        app:layout_constraintEnd_toStartOf="@+id/rssi_large_sign"
+        android:layout_marginHorizontal="5dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" - "
+        android:textSize="16dp"
+        android:textStyle="bold"
+        android:id="@+id/rssi_large_sign"
+        android:textColor="@color/word_black"
+        app:layout_constraintTop_toTopOf="@+id/rssi_small"
+        app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
+        app:layout_constraintStart_toEndOf="@+id/rssi_dash"
+        android:layout_marginHorizontal="5dp"/>
+
+    <EditText
+        android:layout_width="50dp"
+        android:layout_height="20dp"
+        android:id="@+id/rssi_large"
+        android:maxLength="2"
+        android:textColor="@color/word_black"
+        android:textSize="12dp"
+        android:hint="@string/large"
+        android:textColorHint="@color/word_blue"
+        android:paddingStart="5dp"
+        android:inputType="number"
+        app:layout_constraintTop_toTopOf="@+id/rssi_small"
+        app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
+        app:layout_constraintStart_toEndOf="@+id/rssi_large_sign"
+        android:background="@drawable/main_white_four_15_word_blue_2"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rssi_dbm"
+        android:textColor="@color/word_blue"
+        android:textSize="16dp"
+        android:text="@string/dbm"
+        app:layout_constraintTop_toTopOf="@+id/rssi_small"
+        app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
+        app:layout_constraintStart_toEndOf="@+id/rssi_large"
+        android:layout_marginHorizontal="5dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/save_button"
+        android:text="@string/save"
+        android:textSize="16dp"
+        android:backgroundTint="@color/word_blue"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/rssi_small"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

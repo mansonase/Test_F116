@@ -2,6 +2,83 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="600dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/main_white_four_15_word_blue_2"
+    android:theme="@style/OverflowMenuStyle"
+    android:layout_gravity="center">
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/barcode_mac"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/barcode_name"
+        android:backgroundTint="@color/white" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/text_mac"
+        app:layout_constraintTop_toBottomOf="@+id/barcode_mac"
+        app:layout_constraintStart_toStartOf="@+id/barcode_mac"
+        app:layout_constraintEnd_toEndOf="@+id/barcode_mac"
+        android:textColor="@color/word_black"
+        android:textStyle="bold"
+        android:textSize="24dp"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/barcode_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/barcode_mac"
+        app:layout_constraintBottom_toTopOf="@+id/show_rssi"
+        android:background="@color/white"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/text_name"
+        app:layout_constraintTop_toBottomOf="@+id/barcode_name"
+        app:layout_constraintStart_toStartOf="@+id/barcode_name"
+        app:layout_constraintEnd_toEndOf="@+id/barcode_name"
+        android:textColor="@color/word_black"
+        android:textSize="24dp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/show_rssi"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/barcode_name"
+        app:layout_constraintBottom_toTopOf="@+id/cancel_show_rssi"
+        android:textColor="@color/word_black"
+        android:textStyle="bold"
+        android:textSize="32dp"
+        android:text="Rssi : not-detected"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/cancel_show_rssi"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/show_rssi"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:backgroundTint="@color/main_blue"
+        android:text="@string/back"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:textSize="32dp"
+        android:paddingVertical="15dp"
+        android:paddingHorizontal="30dp"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

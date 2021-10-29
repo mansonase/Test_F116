@@ -7,13 +7,554 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <androidx.appcompat.widget.Toolbar
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:id="@+id/toolbar"
+        android:background="@color/main_blue"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
+        app:popupTheme="@style/ToolbarPopupTheme"
+        app:titleTextAppearance="@style/TitleTextSize"/>
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/main_constraintlayout">
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_firmware"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/title_firmware"
+                app:layout_constraintTop_toTopOf="@+id/title_firmware"
+                app:layout_constraintBottom_toBottomOf="@+id/title_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_firmware"
+                android:text="@string/firmware"
+                android:textSize="24dp"
+                android:textColor="@color/word_black"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/show_firmware"
+                app:layout_constraintEnd_toStartOf="@+id/text_firmware"
+                android:layout_marginTop="10dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_firmware"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="@+id/title_firmware"
+                app:layout_constraintStart_toEndOf="@+id/title_firmware"
+                app:layout_constraintEnd_toStartOf="@+id/btn_connection"
+                android:text="30"/>
+
+            <Button
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_connection"
+                android:textStyle="bold"
+                android:textSize="16dp"
+                android:textColor="@color/white"
+                android:text="@string/disconnected"
+                app:layout_constraintTop_toTopOf="@+id/title_firmware"
+                app:layout_constraintBottom_toBottomOf="@+id/title_firmware"
+                app:layout_constraintStart_toEndOf="@+id/text_firmware"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@android:color/holo_red_light"
+                android:gravity="center"
+                android:paddingHorizontal="10dp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_tag"
+                app:layout_constraintTop_toTopOf="@+id/title_tag"
+                app:layout_constraintBottom_toBottomOf="@+id/title_tag"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_tag"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"
+                app:layout_constraintTop_toBottomOf="@+id/title_firmware"
+                android:text="@string/tag_number"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_tag"
+                android:text="1234"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:layout_marginStart="20dp"
+                app:layout_constraintStart_toEndOf="@+id/title_tag"
+                app:layout_constraintTop_toTopOf="@+id/title_tag"
+                app:layout_constraintBottom_toBottomOf="@+id/title_tag"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_rssi"
+                app:layout_constraintTop_toTopOf="@+id/title_rssi"
+                app:layout_constraintBottom_toBottomOf="@+id/title_rssi"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_rssi"
+                android:textSize="24dp"
+                android:textColor="@color/word_black"
+                android:text="@string/rssi"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"
+                app:layout_constraintTop_toBottomOf="@+id/title_tag"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_rssi"
+                android:text="-5"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:layout_marginStart="20dp"
+                app:layout_constraintStart_toEndOf="@+id/title_rssi"
+                app:layout_constraintTop_toTopOf="@+id/title_rssi"
+                app:layout_constraintBottom_toBottomOf="@+id/title_rssi"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_current"
+                app:layout_constraintTop_toTopOf="@+id/title_current"
+                app:layout_constraintBottom_toBottomOf="@+id/title_current"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_current"
+                android:text="@string/current"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/title_rssi"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_current"
+                android:text="5.01"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:layout_marginStart="20dp"
+                app:layout_constraintStart_toEndOf="@+id/title_current"
+                app:layout_constraintTop_toTopOf="@+id/title_current"
+                app:layout_constraintBottom_toBottomOf="@+id/title_current"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_voltage"
+                app:layout_constraintTop_toTopOf="@+id/title_voltage"
+                app:layout_constraintBottom_toBottomOf="@+id/title_voltage"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_voltage"
+                android:textSize="24dp"
+                android:textColor="@color/word_black"
+                android:text="@string/voltage"
+                app:layout_constraintTop_toBottomOf="@+id/title_current"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_voltage"
+                android:text="110"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:layout_marginStart="20dp"
+                app:layout_constraintStart_toEndOf="@+id/title_voltage"
+                app:layout_constraintTop_toTopOf="@+id/title_voltage"
+                app:layout_constraintBottom_toBottomOf="@+id/title_voltage"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_watt"
+                app:layout_constraintTop_toTopOf="@+id/title_watt"
+                app:layout_constraintBottom_toBottomOf="@+id/title_watt"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_watt"
+                android:textSize="24dp"
+                android:text="@string/watt"
+                android:textColor="@color/word_black"
+                app:layout_constraintTop_toBottomOf="@+id/title_voltage"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_watt"
+                android:text="1150"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:layout_marginStart="20dp"
+                app:layout_constraintStart_toEndOf="@+id/title_watt"
+                app:layout_constraintTop_toTopOf="@+id/title_watt"
+                app:layout_constraintBottom_toBottomOf="@+id/title_watt"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_power_factor"
+                app:layout_constraintTop_toTopOf="@+id/title_power_factor"
+                app:layout_constraintBottom_toBottomOf="@+id/title_power_factor"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_power_factor"
+                android:textColor="@color/word_black"
+                android:text="@string/power_factor"
+                android:textSize="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/title_watt"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_power_factor"
+                android:text="0.99"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:layout_marginStart="20dp"
+                app:layout_constraintStart_toEndOf="@+id/title_power_factor"
+                app:layout_constraintTop_toTopOf="@+id/title_power_factor"
+                app:layout_constraintBottom_toBottomOf="@+id/title_power_factor"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_wh"
+                app:layout_constraintTop_toTopOf="@+id/title_wh"
+                app:layout_constraintBottom_toBottomOf="@+id/title_wh"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_wh"
+                android:textSize="24dp"
+                android:text="@string/wh"
+                android:textColor="@color/word_black"
+                app:layout_constraintTop_toBottomOf="@+id/title_power_factor"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_wh"
+                android:text="xxxx"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:layout_marginStart="20dp"
+                app:layout_constraintStart_toEndOf="@+id/title_wh"
+                app:layout_constraintTop_toTopOf="@+id/title_wh"
+                app:layout_constraintBottom_toBottomOf="@+id/title_wh"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_led_1"
+                app:layout_constraintTop_toTopOf="@+id/title_led_1"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_1"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_led_1"
+                android:textColor="@color/word_black"
+                android:text="@string/led_blue_flash"
+                android:textSize="24dp"
+                android:layout_marginTop="30dp"
+                app:layout_constraintTop_toBottomOf="@+id/title_wh"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/fail"
+                android:id="@+id/fail_led_1"
+                android:textSize="20dp"
+                android:textColor="@color/white"
+                android:background="@android:color/holo_red_light"
+                app:layout_constraintTop_toTopOf="@+id/title_led_1"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_1"
+                app:layout_constraintStart_toEndOf="@+id/title_led_1"
+                app:layout_constraintEnd_toStartOf="@+id/pass_led_1"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:text="@string/pass"
+                android:id="@+id/pass_led_1"
+                android:background="@android:color/holo_green_dark"
+                app:layout_constraintTop_toTopOf="@+id/title_led_1"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_1"
+                app:layout_constraintStart_toEndOf="@+id/fail_led_1"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_led_2"
+                app:layout_constraintTop_toTopOf="@+id/title_led_2"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_2"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_led_2"
+                android:textColor="@color/word_black"
+                android:textSize="24dp"
+                android:text="@string/led_blue_on"
+                android:layout_marginTop="30dp"
+                app:layout_constraintTop_toBottomOf="@+id/title_led_1"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/fail"
+                android:id="@+id/fail_led_2"
+                android:textSize="20dp"
+                android:textColor="@color/white"
+                android:background="@android:color/holo_red_light"
+                app:layout_constraintTop_toTopOf="@+id/title_led_2"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_2"
+                app:layout_constraintStart_toEndOf="@+id/title_led_2"
+                app:layout_constraintEnd_toStartOf="@+id/pass_led_2"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:text="@string/pass"
+                android:id="@+id/pass_led_2"
+                android:background="@android:color/holo_green_dark"
+                app:layout_constraintTop_toTopOf="@+id/title_led_2"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_2"
+                app:layout_constraintStart_toEndOf="@+id/fail_led_2"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_led_3"
+                app:layout_constraintTop_toTopOf="@+id/title_led_3"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_3"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_led_3"
+                android:textColor="@color/word_black"
+                android:text="@string/led_green_flash"
+                android:textSize="24dp"
+                android:layout_marginTop="30dp"
+                app:layout_constraintTop_toBottomOf="@+id/title_led_2"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/fail"
+                android:id="@+id/fail_led_3"
+                android:textSize="20dp"
+                android:textColor="@color/white"
+                android:background="@android:color/holo_red_light"
+                app:layout_constraintTop_toTopOf="@+id/title_led_3"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_3"
+                app:layout_constraintStart_toEndOf="@+id/title_led_3"
+                app:layout_constraintEnd_toStartOf="@+id/pass_led_3"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:text="@string/pass"
+                android:id="@+id/pass_led_3"
+                android:background="@android:color/holo_green_dark"
+                app:layout_constraintTop_toTopOf="@+id/title_led_3"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_3"
+                app:layout_constraintStart_toEndOf="@+id/fail_led_3"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/show_led_4"
+                app:layout_constraintTop_toTopOf="@+id/title_led_4"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_4"
+                app:layout_constraintStart_toStartOf="@+id/show_firmware"
+                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_led_4"
+                android:textSize="24dp"
+                android:text="@string/led_red_on"
+                android:textColor="@color/word_black"
+                android:layout_marginTop="30dp"
+                app:layout_constraintTop_toBottomOf="@+id/title_led_3"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/fail"
+                android:id="@+id/fail_led_4"
+                android:textSize="20dp"
+                android:textColor="@color/white"
+                android:background="@android:color/holo_red_light"
+                app:layout_constraintTop_toTopOf="@+id/title_led_4"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_4"
+                app:layout_constraintStart_toEndOf="@+id/title_led_4"
+                app:layout_constraintEnd_toStartOf="@+id/pass_led_4"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:text="@string/pass"
+                android:id="@+id/pass_led_4"
+                android:background="@android:color/holo_green_dark"
+                app:layout_constraintTop_toTopOf="@+id/title_led_4"
+                app:layout_constraintBottom_toBottomOf="@+id/title_led_4"
+                app:layout_constraintStart_toEndOf="@+id/fail_led_4"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_result"
+                android:textColor="@color/word_black"
+                android:text="@string/result"
+                android:textSize="30dp"
+                android:textStyle="bold"
+                android:layout_marginTop="30dp"
+                app:layout_constraintTop_toBottomOf="@+id/title_led_4"
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_result"
+                android:textColor="@android:color/holo_green_dark"
+                android:text="@string/pass"
+                android:textSize="30dp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="@+id/title_result"
+                app:layout_constraintBottom_toBottomOf="@+id/title_result"
+                app:layout_constraintStart_toEndOf="@+id/title_result"
+                android:paddingHorizontal="20dp"/>
+
+
+            <Button
+                android:id="@+id/btn_test"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/main_blue_four_15"
+                android:text="@string/test"
+                android:textColor="@color/white"
+                android:textSize="24dp"
+                android:layout_marginTop="30dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btn_save"
+                app:layout_constraintTop_toBottomOf="@+id/title_result"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginBottom="50dp"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_save"
+                android:background="@drawable/main_blue_four_15"
+                android:textColor="@color/white"
+                android:text="@string/save"
+                android:textSize="24dp"
+                app:layout_constraintTop_toTopOf="@+id/btn_test"
+                app:layout_constraintStart_toEndOf="@+id/btn_test"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:id="@+id/cover_main"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/cover_grey"
+        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

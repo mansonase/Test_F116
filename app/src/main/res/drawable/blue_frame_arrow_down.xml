@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:drawable="@drawable/main_white_four_15_word_blue_2">
+    </item>
+
+    <item
+        android:drawable="@drawable/ic_baseline_keyboard_arrow_down_24"
+        android:gravity="end|center_vertical"
+        android:right="5px">
+
+    </item>
+
+
+</layer-list>

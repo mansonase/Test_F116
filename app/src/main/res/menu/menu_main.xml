@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_header_settings"
+        android:title="@string/header"
+        android:icon="@drawable/ic_baseline_add_24"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_export"
+        android:title="@string/export"
+        android:icon="@drawable/ic_baseline_forward_to_inbox_24"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_renew"
+        android:icon="@drawable/ic_baseline_autorenew_24"
+        app:showAsAction="always"
+        android:title="@string/renew" />
+
+</menu>
