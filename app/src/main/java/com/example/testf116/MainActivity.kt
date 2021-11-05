@@ -33,7 +33,7 @@ import androidx.core.app.ActivityCompat
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.dialog_header.cancel_button
+import kotlinx.android.synthetic.main.dialog_header.*
 import kotlinx.android.synthetic.main.fragment_barcode.*
 import kotlinx.android.synthetic.main.fragment_barcode.show_rssi
 
@@ -52,6 +52,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private var rssi=0
     private var mBluetoothLeService:BluetoothLeService?=null
     private var isConnected=false
+
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +75,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         val serviceIntent=Intent(this,BluetoothLeService::class.java)
         bindService(serviceIntent,mServiceConnection, BIND_AUTO_CREATE)
+
+        sharedPreferences=getSharedPreferences("f116_db", MODE_PRIVATE)
 
         setToolbar()
         initView()
@@ -310,6 +314,23 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         dialog.cancel_button.setOnClickListener {
             dialog.dismiss()
         }
+
+        dialog.save_button.setOnClickListener {
+            sharedPreferences.edit().putString(GattAttributes.ORDER_SERIAL_1,dialog.order_serial_1.text.toString()).apply()
+            sharedPreferences.edit().putString(GattAttributes.ORDER_SERIAL_2,dialog.order_serial_2.text.toString()).apply()
+            sharedPreferences.edit().putString(GattAttributes.LOT_NUMBER,dialog.order_serial_lot.text.toString()).apply()
+            sharedPreferences.edit().putString(GattAttributes.FIRMWARE,dialog.firmware_number.text.toString()).apply()
+            sharedPreferences.edit().putString(GattAttributes.TAG,dialog.tag_number.text.toString()).apply()
+            sharedPreferences.edit().putString(GattAttributes.DEVICE_ADDRESS,address).apply()
+            sharedPreferences.edit().putString(GattAttributes.RSSI_SMALL,dialog.rssi_small.text.toString()).apply()
+            sharedPreferences.edit().putString(GattAttributes.RSSI_LARGE,dialog.rssi_large.text.toString()).apply()
+            sharedPreferences.edit().putString(GattAttributes.PRODUCING_TIME,"xxxx").apply()
+            sharedPreferences.edit().putString(GattAttributes.TEST_DEP,"1").apply()
+
+            
+        }
+
+
         dialog.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
         dialog.show()
         dialog.window?.decorView?.systemUiVisibility=this.window?.decorView?.systemUiVisibility!!
@@ -434,7 +455,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
             if (result.device.name==null)return
 
-            if (result.device.name.substring(0,4).trim()!="F100")return
+            if (result.device.name.substring(0,6).trim()!="eCloud")return
 
             Log.d("testF116","address ${result.device.address}, name: ${result.device.name}, rssi ${result.rssi}")
 

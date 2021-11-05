@@ -8,6 +8,17 @@ class GattAttributes {
         const val DEVICE_NAME="device_name"
         const val DEVICE_ADDRESS="device_address"
 
+        const val ORDER_SERIAL_1="order_serial_1"
+        const val ORDER_SERIAL_2="order_serial_2"
+        const val LOT_NUMBER="lot_number"
+        const val FIRMWARE="firmware"
+        const val MAC_ID="mac_id"
+        const val TAG="tag"
+        const val RSSI_SMALL="rssi_small"
+        const val RSSI_LARGE="rssi_large"
+        const val TEST_DEP="test_department"
+        const val PRODUCING_TIME="producing_time"
+
 
         const val CONFIG = "00002902-0000-1000-8000-00805f9b34fb"
 

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">F116测试</string>
+
+    <string name="need_fine_permission">需要位置權限</string>
+    <string name="need_fine_permission_to_use_ble">需要位置權限來開啟藍芽</string>
+    <string name="ok_i_know">好的，知道了</string>
+    <string name="press_no">按下拒絕</string>
+    <string name="allow_permission">允許權限</string>
+
+
+    <string name="export">Export</string>
+    <string name="header">Header</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="pass">Pass</string>
+    <string name="p">P</string>
+    <string name="fail">Fail</string>
+    <string name="f">F</string>
+    <string name="order_number">Order Number :</string>
+    <string name="lot">Lot</string>
+    <string name="firmware">固件版本 :</string>
+    <string name="producing_time">Producing Time :</string>
+    <string name="year">Year</string>
+    <string name="month">Month</string>
+    <string name="day">Day</string>
+    <string name="testing_department">Test Department :</string>
+    <string name="ipqc">IPQC</string>
+    <string name="qa">QA</string>
+    <string name="rd">RD</string>
+    <string name="product_serial_number">产品序列号</string>
+    <string name="mac_address">蓝牙地址</string>
+    <string name="tag">标签</string>
+    <string name="tag_number">标签 No. :</string>
+    <string name="dbm">dBM</string>
+    <string name="rssi">Rssi :</string>
+    <string name="current">电流 :</string>
+    <string name="ma">mA</string>
+    <string name="a">A</string>
+    <string name="voltage">电压 :</string>
+    <string name="v">V</string>
+    <string name="watt">功率 :</string>
+    <string name="w">W</string>
+    <string name="wh">WH :</string>
+    <string name="power_factor">功率因数 :</string>
+    <string name="led_blue_flash">LED 1 :</string>
+    <string name="led_blue_on">LED 2 :</string>
+    <string name="led_green_flash">LED 3 :</string>
+    <string name="led_red_on">LED 4 :</string>
+    <string name="result">测试结果 :</string>
+    <string name="barcode">条码</string>
+    <string name="small">Small</string>
+    <string name="large">Large</string>
+    <string name="back">Back</string>
+    <string name="renew">扫描</string>
+    <string name="connected">已连接</string>
+    <string name="disconnected">已断开</string>
+    <string name="test">测试</string>
+</resources>
