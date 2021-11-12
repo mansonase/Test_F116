@@ -21,9 +21,10 @@
 
     <ScrollView
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -63,7 +64,7 @@
                 app:layout_constraintTop_toTopOf="@+id/title_firmware"
                 app:layout_constraintStart_toEndOf="@+id/title_firmware"
                 app:layout_constraintEnd_toStartOf="@+id/btn_connection"
-                android:text="30"/>
+                android:text="@string/na"/>
 
             <Button
                 android:layout_width="120dp"
@@ -104,7 +105,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/text_tag"
-                android:text="1234"
+                android:text="@string/na"
                 android:textColor="@color/word_black"
                 android:textSize="24dp"
                 android:layout_marginStart="20dp"
@@ -136,7 +137,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/text_rssi"
-                android:text="-5"
+                android:text="@string/na"
                 android:textColor="@color/word_black"
                 android:textSize="24dp"
                 android:layout_marginStart="20dp"
@@ -168,7 +169,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/text_current"
-                android:text="5.01"
+                android:text="@string/na"
                 android:textColor="@color/word_black"
                 android:textSize="24dp"
                 android:layout_marginStart="20dp"
@@ -200,7 +201,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/text_voltage"
-                android:text="110"
+                android:text="@string/na"
                 android:textColor="@color/word_black"
                 android:textSize="24dp"
                 android:layout_marginStart="20dp"
@@ -232,7 +233,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/text_watt"
-                android:text="1150"
+                android:text="@string/na"
                 android:textColor="@color/word_black"
                 android:textSize="24dp"
                 android:layout_marginStart="20dp"
@@ -264,7 +265,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/text_power_factor"
-                android:text="0.99"
+                android:text="@string/na"
                 android:textColor="@color/word_black"
                 android:textSize="24dp"
                 android:layout_marginStart="20dp"
@@ -273,14 +274,6 @@
                 app:layout_constraintBottom_toBottomOf="@+id/title_power_factor"
                 android:textStyle="bold"/>
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/show_wh"
-                app:layout_constraintTop_toTopOf="@+id/title_wh"
-                app:layout_constraintBottom_toBottomOf="@+id/title_wh"
-                app:layout_constraintStart_toStartOf="@+id/show_firmware"
-                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -296,7 +289,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/text_wh"
-                android:text="xxxx"
+                android:text="@string/na"
                 android:textColor="@color/word_black"
                 android:textSize="24dp"
                 android:layout_marginStart="20dp"
@@ -505,8 +498,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/text_result"
-                android:textColor="@android:color/holo_green_dark"
-                android:text="@string/pass"
+                android:textColor="@color/word_black"
+                android:text="@string/na"
                 android:textSize="30dp"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="@+id/title_result"
@@ -543,18 +536,45 @@
                 app:layout_constraintEnd_toEndOf="parent"/>
 
 
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:id="@+id/upper_cover_main"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/fail_led_1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@color/cover_grey"
+                android:elevation="20dp"
+                android:visibility="visible"/>
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:id="@+id/lower_cover_main"
+                app:layout_constraintTop_toTopOf="@+id/fail_led_1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@color/cover_grey"
+                android:elevation="20dp"
+                android:visibility="visible"/>
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
-    <ImageView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:id="@+id/cover_main"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
+
+
+    <ProgressBar
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:id="@+id/progressbar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@color/cover_grey"
-        android:visibility="gone" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"
+        style="@android:style/Widget.Material.ProgressBar.Large"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

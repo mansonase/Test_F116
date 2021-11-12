@@ -19,6 +19,16 @@ class GattAttributes {
         const val TEST_DEP="test_department"
         const val PRODUCING_TIME="producing_time"
 
+        const val CURRENT_LOW=4.87f
+        const val CURRENT_HIGH=5.12f
+        const val VOLTAGE_LOW=224f
+        const val VOLTAGE_HIGH=236f
+        const val WATT_LOW=1121f
+        const val WATT_HIGH=1178f
+        const val PF_LOW=0.98f
+        const val PF_HIGH=1f
+
+
 
         const val CONFIG = "00002902-0000-1000-8000-00805f9b34fb"
 
@@ -98,6 +108,7 @@ class GattAttributes {
         const val mSoftwareStatus="software_status"
         const val mErrorCode="error_code"
 
+        const val mRssi="rssi"
     }
 
 

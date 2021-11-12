@@ -123,7 +123,14 @@ class BluetoothLeService():Service() {
 
 
             broadcastUpdate(ACTION_DATA_AVAILABLE,characteristic)
-            Log.d(TAG,"write successfully , ${characteristic?.value?.get(0)?.toInt()}")
+            Log.d(TAG,"write successfully , ${characteristic.value?.get(0)?.toInt()}")
+        }
+
+        override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
+            super.onReadRemoteRssi(gatt, rssi, status)
+            if (status==BluetoothGatt.GATT_SUCCESS){
+                broadcastRssi(ACTION_DATA_AVAILABLE,rssi)
+            }
         }
 
         override fun onCharacteristicRead(
@@ -183,6 +190,12 @@ class BluetoothLeService():Service() {
 
         intent.putExtra(EXTRA_DATA,data)
         intent.putExtra(CHARACTERISTIC,GattAttributes.mChargingLatencySend)
+        sendBroadcast(intent)
+    }
+    private fun broadcastRssi(action: String,rssi:Int){
+        val intent=Intent(action)
+        intent.putExtra(EXTRA_DATA,rssi)
+        intent.putExtra(CHARACTERISTIC,GattAttributes.mRssi)
         sendBroadcast(intent)
     }
     private fun broadcastUpdate(action: String, characteristic: BluetoothGattCharacteristic){
@@ -412,7 +425,11 @@ class BluetoothLeService():Service() {
             }
             GattAttributes.nfc_tag_id->{
 
-                val data="0x "+characteristic.value.toHexString()
+
+                var data=""
+                for (i in characteristic.value.indices){
+                    data+=characteristic.value[i].toChar()
+                }
 
                 intent.putExtra(EXTRA_DATA, data)
                 intent.putExtra(CHARACTERISTIC,GattAttributes.mNfcTagId)
@@ -509,6 +526,13 @@ class BluetoothLeService():Service() {
             return
         }
         gatt!!.readCharacteristic(characteristic)
+    }
+
+    fun readRemoteRssii(){
+        if (adapter==null||gatt==null){
+            return
+        }
+        gatt!!.readRemoteRssi()
     }
 
     fun setCharacteristicNotification(characteristic: BluetoothGattCharacteristic,enabled:Boolean){

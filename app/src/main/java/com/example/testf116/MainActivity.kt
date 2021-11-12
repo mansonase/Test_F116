@@ -2,10 +2,9 @@ package com.example.testf116
 
 import android.Manifest
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.app.Dialog
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
+import android.bluetooth.*
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -27,6 +26,8 @@ import android.text.SpannableString
 import android.text.style.ImageSpan
 import android.util.Log
 import android.view.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
@@ -35,7 +36,9 @@ import com.journeyapps.barcodescanner.BarcodeEncoder
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_header.*
 import kotlinx.android.synthetic.main.fragment_barcode.*
-import kotlinx.android.synthetic.main.fragment_barcode.show_rssi
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity(),View.OnClickListener {
@@ -47,13 +50,41 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private var scanner:BluetoothLeScanner?=null
     private var toolbar:Toolbar?=null
 
-    private var address=""
+
     private var deviceName=""
     private var rssi=0
     private var mBluetoothLeService:BluetoothLeService?=null
+    private var characteristic:BluetoothGattCharacteristic?=null
     private var isConnected=false
 
     private lateinit var sharedPreferences: SharedPreferences
+
+    private lateinit var strOrderSerialOne:String
+    private lateinit var strOrderSerialTwo:String
+    private lateinit var strLotNumber:String
+    private lateinit var strFirmwareVersion:String
+    private lateinit var strTagNumber:String
+    private var strAddress=""
+    private lateinit var strRssiSmall:String
+    private lateinit var strRssiLarge:String
+    private lateinit var strProducingTime:String
+    private var intTestDepartment=0
+
+    private lateinit var calendar:Calendar
+
+    private var isFirmwarePass=false
+    private var isTagPass=false
+    private var isRssiPass=false
+    private var isCurrentPass=false
+    private var isVoltagePass=false
+    private var isWattPass=false
+    private var isPFPass=false
+    private var isLED1Pass:Boolean?=null
+    private var isLED2Pass:Boolean?=null
+    private var isLED3Pass:Boolean?=null
+    private var isLED4Pass:Boolean?=null
+    private var isResultPass=false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +107,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         val serviceIntent=Intent(this,BluetoothLeService::class.java)
         bindService(serviceIntent,mServiceConnection, BIND_AUTO_CREATE)
 
-        sharedPreferences=getSharedPreferences("f116_db", MODE_PRIVATE)
+
+        calendar=Calendar.getInstance()
 
         setToolbar()
         initView()
@@ -86,7 +118,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         super.onResume()
         hideNavigationBar()
 
-        registerReceiver(mReceiver, IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED))
+        registerReceiver(mReceiver, makeGattUpdateIntentFilter())
 
         if (adapter?.isEnabled == true){
             if (getPermissionsBLE()){
@@ -123,48 +155,61 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             R.id.btn_connection->{
                 if (isConnected){
 
-                    isConnected=false
-                    btn_connection.setText(R.string.disconnected)
-                    btn_connection.setBackgroundColor(resources.getColor(android.R.color.holo_red_light))
                     mBluetoothLeService?.disconnect()
                 }else{
-                    isConnected=true
-                    btn_connection.setText(R.string.connected)
-                    btn_connection.setBackgroundColor(resources.getColor(android.R.color.holo_green_dark))
-                    mBluetoothLeService?.connect(address)
+
+                    mBluetoothLeService?.connect(strAddress)
                 }
+                progressbar.visibility=View.VISIBLE
             }
             R.id.btn_test->{
-
+                doCharacteristic()
+                Log.d("btnTest","test btn")
             }
             R.id.btn_save->{
-
+                Log.d("btnTest","save btn")
+                resetAfterSetup()
             }
             R.id.fail_led_1->{
-
+                isLED1Pass=false
+                show_led_1.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                checkAllPass()
             }
             R.id.fail_led_2->{
-
+                isLED2Pass=false
+                show_led_2.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                checkAllPass()
             }
             R.id.fail_led_3->{
-
+                isLED3Pass=false
+                show_led_3.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                checkAllPass()
             }
             R.id.fail_led_4->{
-
+                isLED4Pass=false
+                show_led_4.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                checkAllPass()
             }
             R.id.pass_led_1->{
-
+                isLED1Pass=true
+                show_led_1.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                checkAllPass()
             }
             R.id.pass_led_2->{
-
+                isLED2Pass=true
+                show_led_2.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                checkAllPass()
             }
             R.id.pass_led_3->{
-
+                isLED3Pass=true
+                show_led_3.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                checkAllPass()
             }
             R.id.pass_led_4->{
-
+                isLED4Pass=true
+                show_led_4.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                checkAllPass()
             }
-
         }
     }
 
@@ -205,6 +250,16 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun makeGattUpdateIntentFilter():IntentFilter{
+        val intentFilter=IntentFilter()
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED)
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED)
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED)
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE)
+        intentFilter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
+        return intentFilter
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -276,6 +331,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         Log.d("showmac","settoolbar done")
     }
     private fun initView(){
+
+        sharedPreferences=getSharedPreferences("f116_db", MODE_PRIVATE)
+
         btn_connection.setOnClickListener(this)
         btn_test.setOnClickListener(this)
         btn_save.setOnClickListener(this)
@@ -288,6 +346,34 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         pass_led_2.setOnClickListener(this)
         pass_led_3.setOnClickListener(this)
         pass_led_4.setOnClickListener(this)
+
+        if (isConnected){
+            lower_cover_main.visibility=View.GONE
+            setButtonClickable(true)
+        }else{
+            lower_cover_main.visibility=View.VISIBLE
+            setButtonClickable(false)
+        }
+
+        if (strAddress.isEmpty()){
+            upper_cover_main.visibility=View.VISIBLE
+            btn_connection.isClickable=false
+        }else{
+            upper_cover_main.visibility=View.GONE
+            btn_connection.isClickable=true
+        }
+    }
+
+    private fun initStandard(){
+        strOrderSerialOne=sharedPreferences.getString(GattAttributes.ORDER_SERIAL_1,"0000").toString()
+        strOrderSerialTwo=sharedPreferences.getString(GattAttributes.ORDER_SERIAL_2,"00000").toString()
+        strLotNumber=sharedPreferences.getString(GattAttributes.LOT_NUMBER,"0").toString()
+        strFirmwareVersion=sharedPreferences.getString(GattAttributes.FIRMWARE,"0").toString()
+        strTagNumber=sharedPreferences.getString(GattAttributes.TAG,"0000").toString()
+        strRssiSmall=sharedPreferences.getString(GattAttributes.RSSI_SMALL,"0").toString()
+        strRssiLarge=sharedPreferences.getString(GattAttributes.RSSI_LARGE,"0").toString()
+        strProducingTime=sharedPreferences.getString(GattAttributes.PRODUCING_TIME,"0").toString()
+        intTestDepartment=sharedPreferences.getInt(GattAttributes.TEST_DEP,-1)
     }
 
     private fun menuIconWithText(drawable: Drawable, title: String): CharSequence {
@@ -300,6 +386,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
     private fun createDialogHeader() {
 
+        initStandard()
         val dialog=Dialog(this)
         dialog.setContentView(R.layout.dialog_header)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -311,23 +398,126 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         //lps.height=((resources.displayMetrics.heightPixels)*0.6).toInt()
         lps.height=WindowManager.LayoutParams.WRAP_CONTENT
         dialog.window?.attributes=lps
+
+        dialog.order_serial_1.hint=strOrderSerialOne
+        dialog.order_serial_2.hint=strOrderSerialTwo
+        dialog.order_serial_lot.hint=strLotNumber
+        dialog.firmware_number.hint=strFirmwareVersion
+        dialog.tag_number.hint=strTagNumber
+        dialog.rssi_small.hint=strRssiSmall
+        dialog.rssi_large.hint=strRssiLarge
+        dialog.producing_time.text=calendarToText(calendar)
+
+        val spinnerAdapter=ArrayAdapter.createFromResource(this,R.array.test_dep,android.R.layout.simple_dropdown_item_1line)
+        dialog.testing_department.adapter=spinnerAdapter
+        dialog.testing_department.onItemSelectedListener= object : AdapterView.OnItemSelectedListener {
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+               intTestDepartment=position
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+        }
+        dialog.testing_department.setSelection(intTestDepartment)
+
         dialog.cancel_button.setOnClickListener {
             dialog.dismiss()
         }
 
         dialog.save_button.setOnClickListener {
-            sharedPreferences.edit().putString(GattAttributes.ORDER_SERIAL_1,dialog.order_serial_1.text.toString()).apply()
-            sharedPreferences.edit().putString(GattAttributes.ORDER_SERIAL_2,dialog.order_serial_2.text.toString()).apply()
-            sharedPreferences.edit().putString(GattAttributes.LOT_NUMBER,dialog.order_serial_lot.text.toString()).apply()
-            sharedPreferences.edit().putString(GattAttributes.FIRMWARE,dialog.firmware_number.text.toString()).apply()
-            sharedPreferences.edit().putString(GattAttributes.TAG,dialog.tag_number.text.toString()).apply()
-            sharedPreferences.edit().putString(GattAttributes.DEVICE_ADDRESS,address).apply()
-            sharedPreferences.edit().putString(GattAttributes.RSSI_SMALL,dialog.rssi_small.text.toString()).apply()
-            sharedPreferences.edit().putString(GattAttributes.RSSI_LARGE,dialog.rssi_large.text.toString()).apply()
-            sharedPreferences.edit().putString(GattAttributes.PRODUCING_TIME,"xxxx").apply()
-            sharedPreferences.edit().putString(GattAttributes.TEST_DEP,"1").apply()
 
-            
+
+            strOrderSerialOne=if(dialog.order_serial_1.text.isNotEmpty()){
+                dialog.order_serial_1.text.toString()
+            }else{
+                dialog.order_serial_1.hint.toString()
+            }
+            strOrderSerialTwo=if (dialog.order_serial_2.text.isNotEmpty()){
+                dialog.order_serial_2.text.toString()
+            }else{
+                dialog.order_serial_2.hint.toString()
+            }
+            strLotNumber=if (dialog.order_serial_lot.text.isNotEmpty()){
+                dialog.order_serial_lot.text.toString()
+            }else{
+                dialog.order_serial_lot.hint.toString()
+            }
+            strFirmwareVersion=if (dialog.firmware_number.text.isNotEmpty()){
+                dialog.firmware_number.text.toString()
+            }else{
+                dialog.firmware_number.hint.toString()
+            }
+            strTagNumber=if (dialog.tag_number.text.isNotEmpty()){
+                dialog.tag_number.text.toString()
+            }else{
+                dialog.tag_number.hint.toString()
+            }
+            strRssiSmall=if (dialog.rssi_small.text.isNotEmpty()){
+                dialog.rssi_small.text.toString()
+            }else{
+                dialog.rssi_small.hint.toString()
+            }
+            strRssiLarge=if (dialog.rssi_large.text.isNotEmpty()){
+                dialog.rssi_large.text.toString()
+            }else{
+                dialog.rssi_large.hint.toString()
+            }
+
+            val small=(0-strRssiSmall.toInt())
+            val large=(0-strRssiLarge.toInt())
+            if (small>large){
+
+                val alertDialog=AlertDialog.Builder(this)
+                        .setTitle(R.string.alert)
+                        .setMessage(R.string.not_in_range)
+                        .setPositiveButton(R.string.ok){dialog,which->
+                            dialog.dismiss()
+                        }.create()
+
+                alertDialog.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+                alertDialog.show()
+                alertDialog.window?.decorView?.systemUiVisibility=this.window?.decorView?.systemUiVisibility!!
+                alertDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+
+                return@setOnClickListener
+            }
+
+
+            sharedPreferences.edit()
+                    .putString(GattAttributes.ORDER_SERIAL_1,strOrderSerialOne)
+                    .putString(GattAttributes.ORDER_SERIAL_2,strOrderSerialTwo)
+                    .putString(GattAttributes.LOT_NUMBER,strLotNumber)
+                    .putString(GattAttributes.FIRMWARE,strFirmwareVersion)
+                    .putString(GattAttributes.TAG,strTagNumber)
+                    .putString(GattAttributes.DEVICE_ADDRESS,strAddress)
+                    .putString(GattAttributes.RSSI_SMALL,strRssiSmall)
+                    .putString(GattAttributes.RSSI_LARGE,strRssiLarge)
+                    .putString(GattAttributes.PRODUCING_TIME,strProducingTime)
+                    .putInt(GattAttributes.TEST_DEP,intTestDepartment)
+                    .apply()
+            dialog.dismiss()
+            resetAfterSetup()
+        }
+
+        dialog.producing_time.setOnClickListener {
+
+            val datePickerDialog=DatePickerDialog(this,
+                    { view, year, month, dayOfMonth ->
+
+                        calendar.set(year,month,dayOfMonth)
+                        dialog.producing_time.text=calendarToText(calendar)
+                    },
+                    calendar[Calendar.YEAR],
+                    calendar[Calendar.MONTH],
+                    calendar[Calendar.DAY_OF_MONTH])
+
+            datePickerDialog.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+            datePickerDialog.show()
+            datePickerDialog.window?.decorView?.systemUiVisibility=this.window?.decorView?.systemUiVisibility!!
+            datePickerDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+
         }
 
 
@@ -371,16 +561,16 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             dialog.dismiss()
         }
 
-        if (address.isNotEmpty()) {
+        if (strAddress.isNotEmpty()) {
             dialog.barcode_mac.setImageBitmap(
                 codeAsBitmap(
-                    address,
+                    strAddress,
                     BarcodeFormat.CODE_128,
                     900,
                     200
                 )
             )
-            dialog.text_mac.text=address
+            dialog.text_mac.text=strAddress
         }
 
         if (deviceName.isNotEmpty()) {
@@ -397,7 +587,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         if (rssi<0){
             val rssi_text="Rssi : $rssi dBM"
-            dialog.show_rssi.text = rssi_text
+            dialog.content_rssi.text = rssi_text
         }
 
         dialog.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
@@ -457,18 +647,22 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
             if (result.device.name.substring(0,6).trim()!="eCloud")return
 
+            scanLeDevice(false)
+
             Log.d("testF116","address ${result.device.address}, name: ${result.device.name}, rssi ${result.rssi}")
 
             //supportActionBar?.title = address
             //toolbar?.setTitleTextColor(Color.WHITE)
 
-            address=result.device.address
+            strAddress=result.device.address
             deviceName=result.device.name
             rssi=result.rssi
 
-            toolbar?.title=address
+            toolbar?.title=strAddress
 
-            scanLeDevice(false)
+
+            upper_cover_main.visibility=View.GONE
+            btn_connection.isClickable=true
             return
         }
 
@@ -499,6 +693,27 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                         scanLeDevice(true)
                     }
                 }
+            }else if (BluetoothLeService.ACTION_GATT_CONNECTED==action){
+
+
+            }else if (BluetoothLeService.ACTION_GATT_DISCONNECTED==action){
+                isConnected=false
+                btn_connection.setText(R.string.disconnected)
+                btn_connection.setBackgroundColor(resources.getColor(android.R.color.holo_red_light))
+                lower_cover_main.visibility=View.VISIBLE
+                setButtonClickable(false)
+                resetAfterSetup()
+                progressbar.visibility=View.GONE
+            }else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED==action){
+
+                isConnected=true
+                btn_connection.setText(R.string.connected)
+                btn_connection.setBackgroundColor(resources.getColor(android.R.color.holo_green_dark))
+                lower_cover_main.visibility=View.GONE
+                setButtonClickable(true)
+                progressbar.visibility=View.GONE
+            }else if (BluetoothLeService.ACTION_DATA_AVAILABLE==action){
+                doTest(p1)
             }
         }
     }
@@ -529,5 +744,249 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
 
         return bitmap
+    }
+
+    private fun calendarToText(cal:Calendar):String{
+
+        val format=SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+
+        return format.format(cal.time)
+    }
+
+    private fun doCharacteristic(){
+
+        Thread{
+
+            runOnUiThread {
+                progressbar.visibility=View.VISIBLE
+                characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_INFORMATION)as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.firmware_revision_string))
+                if (characteristic!=null){
+                    mBluetoothLeService?.readCharacteristic(characteristic!!)
+                }
+            }
+            Thread.sleep(500)
+
+            runOnUiThread {
+                characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_CONTROL)as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.nfc_tag_id))
+                if (characteristic!=null){
+                    mBluetoothLeService?.readCharacteristic(characteristic!!)
+                }
+            }
+            Thread.sleep(500)
+
+            runOnUiThread {
+                mBluetoothLeService?.readRemoteRssii()
+            }
+            Thread.sleep(500)
+
+            runOnUiThread{
+                characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_CONTROL)as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.read_recorded_data))
+                if (characteristic!=null){
+                    mBluetoothLeService?.readCharacteristic(characteristic!!)
+                }
+                progressbar.visibility=View.GONE
+            }
+        }.start()
+
+    }
+    private fun doTest(intent: Intent){
+
+        initStandard()
+
+        when(intent.getStringExtra(BluetoothLeService.CHARACTERISTIC)){
+
+            GattAttributes.mFirmwareRevision->{
+                val deviceFirmwareVersion=if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA)==null){
+                    "0"
+                }else{
+                    intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
+                }
+
+                isFirmwarePass= deviceFirmwareVersion == strFirmwareVersion
+
+                text_firmware.text=deviceFirmwareVersion
+
+                if (isFirmwarePass){
+                    show_firmware.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                    text_firmware.setTextColor(Color.parseColor("#050505"))
+                }else{
+                    show_firmware.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                    text_firmware.setTextColor(Color.RED)
+                }
+            }
+            GattAttributes.mNfcTagId->{
+                val deviceNfcTag=if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA)==null){
+                    "0000"
+                }else{
+                    intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
+                }
+                isTagPass=deviceNfcTag==strTagNumber
+
+                text_tag.text=deviceNfcTag
+
+                if (isTagPass){
+                    show_tag.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                    text_tag.setTextColor(Color.parseColor("#050505"))
+                }else{
+                    show_tag.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                    text_tag.setTextColor(Color.RED)
+                }
+            }
+            GattAttributes.mRssi->{
+                val deviceRssi=intent.getIntExtra(BluetoothLeService.EXTRA_DATA,0)
+                val rssiSmall=(0-strRssiSmall.toInt())
+                val rssiLarge=(0-strRssiLarge.toInt())
+
+                isRssiPass= (deviceRssi in rssiSmall .. rssiLarge)
+
+                text_rssi.text=deviceRssi.toString()
+
+                if (isRssiPass){
+                    show_rssi.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                    text_rssi.setTextColor(Color.parseColor("#050505"))
+                }else{
+                    show_rssi.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                    text_rssi.setTextColor(Color.RED)
+                }
+            }
+            GattAttributes.mReadRecordedData->{
+                val array=intent.getStringArrayListExtra(BluetoothLeService.EXTRA_DATA)
+                if (array!=null){
+                    val deviceCurrent=array[2]
+                    val deviceVoltage=array[3]
+                    val deviceWatt=array[4]
+                    val devicePowerFactor=array[5]
+                    val deviceConsumption=array[6]
+
+                    isCurrentPass=(deviceCurrent.toFloat() in GattAttributes.CURRENT_LOW .. GattAttributes.CURRENT_HIGH)
+
+                    text_current.text=deviceCurrent
+
+                    if (isCurrentPass){
+                        show_current.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                        text_current.setTextColor(Color.parseColor("#050505"))
+                    }else{
+                        show_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                        text_current.setTextColor(Color.RED)
+                    }
+
+                    isVoltagePass=(deviceVoltage.toFloat() in GattAttributes.VOLTAGE_LOW .. GattAttributes.VOLTAGE_HIGH)
+
+                    text_voltage.text=deviceVoltage
+
+                    if (isVoltagePass){
+                        show_voltage.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                        text_voltage.setTextColor(Color.parseColor("#050505"))
+                    }else{
+                        show_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                        text_voltage.setTextColor(Color.RED)
+                    }
+
+                    isWattPass=(deviceWatt.toFloat() in GattAttributes.WATT_LOW .. GattAttributes.WATT_HIGH)
+
+                    text_watt.text=deviceWatt
+
+                    if (isWattPass){
+                        show_watt.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                        text_watt.setTextColor(Color.parseColor("#050505"))
+                    }else{
+                        show_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                        text_watt.setTextColor(Color.RED)
+                    }
+
+                    isPFPass=(devicePowerFactor.toFloat() in GattAttributes.PF_LOW .. GattAttributes.PF_HIGH)
+
+                    text_power_factor.text=devicePowerFactor
+
+                    if (isPFPass){
+                        show_power_factor.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                        text_power_factor.setTextColor(Color.parseColor("#050505"))
+                    }else{
+                        show_power_factor.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                        text_power_factor.setTextColor(Color.RED)
+                    }
+                    text_wh.text=deviceConsumption
+                }
+            }
+        }
+        checkAllPass()
+    }
+    private fun resetAfterSetup(){
+
+        show_firmware.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_tag.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_rssi.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_power_factor.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_led_1.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_led_2.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_led_3.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_led_4.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+
+        text_firmware.setText(R.string.na)
+        text_firmware.setTextColor(Color.parseColor("#050505"))
+        text_tag.setText(R.string.na)
+        text_tag.setTextColor(Color.parseColor("#050505"))
+        text_rssi.setText(R.string.na)
+        text_rssi.setTextColor(Color.parseColor("#050505"))
+        text_current.setText(R.string.na)
+        text_current.setTextColor(Color.parseColor("#050505"))
+        text_voltage.setText(R.string.na)
+        text_voltage.setTextColor(Color.parseColor("#050505"))
+        text_watt.setText(R.string.na)
+        text_watt.setTextColor(Color.parseColor("#050505"))
+        text_power_factor.setText(R.string.na)
+        text_power_factor.setTextColor(Color.parseColor("#050505"))
+
+        text_result.setText(R.string.na)
+        text_result.setTextColor(Color.parseColor("#050505"))
+
+        isFirmwarePass=false
+        isTagPass=false
+        isRssiPass=false
+        isCurrentPass=false
+        isVoltagePass=false
+        isWattPass=false
+        isPFPass=false
+
+        isLED1Pass=null
+        isLED2Pass=null
+        isLED3Pass=null
+        isLED4Pass=null
+
+    }
+    private fun setButtonClickable(clickable:Boolean){
+        fail_led_1.isClickable=clickable
+        fail_led_2.isClickable=clickable
+        fail_led_3.isClickable=clickable
+        fail_led_4.isClickable=clickable
+        pass_led_1.isClickable=clickable
+        pass_led_2.isClickable=clickable
+        pass_led_3.isClickable=clickable
+        pass_led_4.isClickable=clickable
+        btn_test.isClickable=clickable
+        btn_save.isClickable=clickable
+    }
+    private fun checkAllPass(){
+
+        if (isLED1Pass!=null&&isLED2Pass!=null&&isLED3Pass!=null&&isLED4Pass!=null){
+
+            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&isFirmwarePass&&isTagPass&&isRssiPass&&isCurrentPass&&isVoltagePass&&isWattPass&&isPFPass){
+
+                isResultPass=true
+                text_result.setTextColor(Color.GREEN)
+                text_result.setText(R.string.pass)
+            }else{
+
+                isResultPass=false
+                text_result.setTextColor(Color.RED)
+                text_result.setText(R.string.fail)
+            }
+        }
     }
 }

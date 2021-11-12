@@ -26,7 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/header_line"
-        app:layout_constraintWidth_percent="0.2">
+        app:layout_constraintWidth_percent="0.15">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -66,7 +66,7 @@
 
     <EditText
         android:layout_width="50dp"
-        android:layout_height="20dp"
+        android:layout_height="30dp"
         android:id="@+id/order_serial_1"
         android:maxLength="4"
         android:textSize="16dp"
@@ -76,7 +76,10 @@
         app:layout_constraintStart_toEndOf="@+id/order_serial_title"
         app:layout_constraintEnd_toStartOf="@+id/order_serial_dash_1"
         app:layout_constraintBottom_toTopOf="@+id/firmware_number"
-        android:background="@drawable/main_white_four_15_word_blue_2" />
+        android:background="@drawable/main_white_four_15_word_blue_2"
+        android:paddingStart="10px"
+        android:nextFocusForward="@+id/order_serial_2"
+        android:imeOptions="flagNoExtractUi|actionNext"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -91,8 +94,8 @@
         app:layout_constraintEnd_toStartOf="@+id/order_serial_2"/>
 
     <EditText
-        android:layout_width="50dp"
-        android:layout_height="20dp"
+        android:layout_width="60dp"
+        android:layout_height="30dp"
         android:id="@+id/order_serial_2"
         android:maxLength="5"
         android:textColor="@color/word_black"
@@ -102,7 +105,10 @@
         app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
         app:layout_constraintStart_toEndOf="@+id/order_serial_dash_1"
         app:layout_constraintEnd_toStartOf="@+id/order_serial_dash_2"
-        android:background="@drawable/main_white_four_15_word_blue_2"/>
+        android:background="@drawable/main_white_four_15_word_blue_2"
+        android:paddingStart="10px"
+        android:nextFocusForward="@+id/order_serial_lot"
+        android:imeOptions="actionNext|flagNoExtractUi"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -117,8 +123,8 @@
         app:layout_constraintEnd_toStartOf="@+id/order_serial_lot"/>
 
     <EditText
-        android:layout_width="50dp"
-        android:layout_height="20dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:id="@+id/order_serial_lot"
         android:maxLength="2"
         android:textColor="@color/word_black"
@@ -128,7 +134,10 @@
         app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
         app:layout_constraintStart_toEndOf="@+id/order_serial_dash_2"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@drawable/main_white_four_15_word_blue_2"/>
+        android:background="@drawable/main_white_four_15_word_blue_2"
+        android:paddingStart="10px"
+        android:nextFocusForward="@+id/firmware_number"
+        android:imeOptions="flagNoExtractUi|actionNext"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -143,7 +152,7 @@
 
     <EditText
         android:layout_width="50dp"
-        android:layout_height="20dp"
+        android:layout_height="30dp"
         android:id="@+id/firmware_number"
         android:maxLength="2"
         android:textColor="@color/word_black"
@@ -152,7 +161,10 @@
         app:layout_constraintTop_toBottomOf="@+id/order_serial_1"
         app:layout_constraintStart_toStartOf="@+id/order_serial_1"
         app:layout_constraintBottom_toTopOf="@+id/tag_number"
-        android:background="@drawable/main_white_four_15_word_blue_2"/>
+        android:background="@drawable/main_white_four_15_word_blue_2"
+        android:paddingStart="10px"
+        android:nextFocusForward="@+id/tag_number"
+        android:imeOptions="actionNext|flagNoExtractUi"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -167,7 +179,7 @@
 
     <EditText
         android:layout_width="50dp"
-        android:layout_height="20dp"
+        android:layout_height="30dp"
         android:id="@+id/tag_number"
         android:maxLength="4"
         android:textColor="@color/word_black"
@@ -176,7 +188,9 @@
         app:layout_constraintTop_toBottomOf="@+id/firmware_number"
         app:layout_constraintStart_toStartOf="@+id/firmware_number"
         app:layout_constraintBottom_toTopOf="@+id/producing_time"
-        android:background="@drawable/main_white_four_15_word_blue_2"/>
+        android:background="@drawable/main_white_four_15_word_blue_2"
+        android:paddingStart="10px"
+        android:imeOptions="flagNoExtractUi|actionDone"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -192,7 +206,7 @@
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:id="@+id/producing_time"
         android:textSize="16dp"
         android:text="2021/10/11"
@@ -218,7 +232,7 @@
 
     <Spinner
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:id="@+id/testing_department"
         android:background="@drawable/blue_frame_arrow_down"
         app:layout_constraintTop_toBottomOf="@+id/producing_time"
@@ -252,19 +266,20 @@
 
     <EditText
         android:layout_width="50dp"
-        android:layout_height="20dp"
+        android:layout_height="30dp"
         android:id="@+id/rssi_small"
         android:maxLength="2"
         android:textColor="@color/word_black"
-        android:textSize="12dp"
-        android:hint="@string/small"
-        android:textColorHint="@color/word_blue"
-        android:paddingStart="5dp"
+        android:textSize="16dp"
+
+        android:paddingStart="10px"
         android:inputType="number"
         app:layout_constraintTop_toBottomOf="@+id/testing_department"
         app:layout_constraintStart_toEndOf="@+id/rssi_small_sign"
         app:layout_constraintBottom_toTopOf="@+id/save_button"
-        android:background="@drawable/main_white_four_15_word_blue_2"/>
+        android:background="@drawable/main_white_four_15_word_blue_2"
+        android:nextFocusForward="@+id/rssi_large"
+        android:imeOptions="actionNext|flagNoExtractUi"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -294,19 +309,19 @@
 
     <EditText
         android:layout_width="50dp"
-        android:layout_height="20dp"
+        android:layout_height="30dp"
         android:id="@+id/rssi_large"
         android:maxLength="2"
         android:textColor="@color/word_black"
-        android:textSize="12dp"
-        android:hint="@string/large"
-        android:textColorHint="@color/word_blue"
-        android:paddingStart="5dp"
+        android:textSize="16dp"
+
+        android:paddingStart="10px"
         android:inputType="number"
         app:layout_constraintTop_toTopOf="@+id/rssi_small"
         app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
         app:layout_constraintStart_toEndOf="@+id/rssi_large_sign"
-        android:background="@drawable/main_white_four_15_word_blue_2"/>
+        android:background="@drawable/main_white_four_15_word_blue_2"
+        android:imeOptions="flagNoExtractUi|actionDone"/>
 
     <TextView
         android:layout_width="wrap_content"

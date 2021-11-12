@@ -16,7 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/show_rssi"
+        app:layout_constraintBottom_toTopOf="@+id/content_rssi"
         android:backgroundTint="@color/white" />
 
     <TextView
@@ -34,7 +34,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/show_rssi"
+        android:id="@+id/content_rssi"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/barcode_mac"
@@ -50,7 +50,7 @@
         android:id="@+id/cancel_show_rssi"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/show_rssi"
+        app:layout_constraintTop_toBottomOf="@+id/content_rssi"
         app:layout_constraintBottom_toTopOf="@+id/barcode_name"
         android:backgroundTint="@color/main_blue"
         android:text="@string/back"

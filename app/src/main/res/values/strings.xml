@@ -55,6 +55,15 @@
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="test">Test</string>
+    <string name="alert">Alert</string>
+    <string name="not_in_range">Not in Normal Range</string>
+    <string name="ok">Ok</string>
+    <string name="na">N/A</string>
 
+    <string-array name="test_dep">
+        <item>IPQC</item>
+        <item>QA</item>
+        <item>RD</item>
+    </string-array>
 
 </resources>
