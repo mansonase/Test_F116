@@ -10,11 +10,20 @@ open class ExamItem :RealmObject(){
     get() {return field}
     set(value) {field=value}
 
-    //產品序號
-    var productSerialNumber:String=""
+    //serial number
+    var serialNumber:Int=-1
     get() {return field}
     set(value) {field=value}
 
+    //test count
+    var testNumber:Int=-1
+    get() {return field}
+    set(value) {field=value}
+
+    //Lot
+    var productLotNumber:String=""
+    get() {return field}
+    set(value) {field=value}
 
     //firmware number
     var firmwareNumber:String=""
@@ -93,6 +102,10 @@ open class ExamItem :RealmObject(){
 
     //testing time end
     var endTime:Long=0L
+    get() {return field}
+    set(value) {field=value}
+
+    var aa24Timestamp:Long=0L
     get() {return field}
     set(value) {field=value}
 }

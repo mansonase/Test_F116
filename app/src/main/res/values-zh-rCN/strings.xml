@@ -58,6 +58,9 @@
     <string name="test">测试</string>
     <string name="alert">警告</string>
     <string name="not_in_range">不在合理范围</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="na">N/A</string>
+    <string name="meter">Meter :</string>
+
+    <string name="saved_successfully">Saved Successfully</string>
 </resources>

@@ -29,6 +29,17 @@ class GattAttributes {
         const val PF_HIGH=1f
 
 
+/*
+        const val CURRENT_LOW=-1f
+        const val CURRENT_HIGH=1f
+        const val VOLTAGE_LOW=100f
+        const val VOLTAGE_HIGH=190f
+        const val WATT_LOW=-1f
+        const val WATT_HIGH=1f
+        const val PF_LOW=-1f
+        const val PF_HIGH=1f
+
+ */
 
         const val CONFIG = "00002902-0000-1000-8000-00805f9b34fb"
 
@@ -38,6 +49,7 @@ class GattAttributes {
         val POWER_MEASUREMENT = "0000aa10-0000-1000-8000-00805f9b34fb"
         val DEVICE_CONTROL = "0000aa20-0000-1000-8000-00805f9b34fb"
         val SYSTEM_STATUS = "0000aa30-0000-1000-8000-00805f9b34fb"
+        val EXTRA_CONTROL="0000aa40-0000-1000-8000-00805f9b34fb"
 
 
         const val device_name = "00002a00-0000-1000-8000-00805f9b34fb"
@@ -71,6 +83,9 @@ class GattAttributes {
         const val hardware_status = "0000aa31-0000-1000-8000-00805f9b34fb"
         const val software_status = "0000aa32-0000-1000-8000-00805f9b34fb"
         const val error_code = "0000aa33-0000-1000-8000-00805f9b34fb"
+
+        const val machine_status="0000aa42-0000-1000-8000-00805f9b34fb"
+        const val meter_parameter="0000aa43-0000-1000-8000-00805f9b34fb"
 
 
         const val mDeviceName="device_name"
@@ -109,6 +124,8 @@ class GattAttributes {
         const val mErrorCode="error_code"
 
         const val mRssi="rssi"
+        const val mMachineStatus="machine_status"
+        const val mMeterVersion="meter_version"
     }
 
 

@@ -57,8 +57,11 @@
     <string name="test">Test</string>
     <string name="alert">Alert</string>
     <string name="not_in_range">Not in Normal Range</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="na">N/A</string>
+    <string name="meter">Meter :</string>
+
+    <string name="saved_successfully">Saved Successfully</string>
 
     <string-array name="test_dep">
         <item>IPQC</item>

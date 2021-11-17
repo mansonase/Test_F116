@@ -33,8 +33,12 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import io.realm.Realm
+import io.realm.Sort
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.dialog_export.*
 import kotlinx.android.synthetic.main.dialog_header.*
+import kotlinx.android.synthetic.main.dialog_header.cancel_button
 import kotlinx.android.synthetic.main.fragment_barcode.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -56,6 +60,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private var mBluetoothLeService:BluetoothLeService?=null
     private var characteristic:BluetoothGattCharacteristic?=null
     private var isConnected=false
+    private var isPowerActivated=false
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -69,8 +74,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private lateinit var strRssiLarge:String
     private lateinit var strProducingTime:String
     private var intTestDepartment=0
+    private var powerOnEpoch=0L
+    private var powerOffEpoch=0L
+    private var aa24Epoch=0L
 
     private lateinit var calendar:Calendar
+    private lateinit var realm: Realm
+    private var testCounts=0
+    private var serial=0
 
     private var isFirmwarePass=false
     private var isTagPass=false
@@ -109,6 +120,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
 
         calendar=Calendar.getInstance()
+        realm= Realm.getDefaultInstance()
 
         setToolbar()
         initView()
@@ -138,6 +150,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         unregisterReceiver(mReceiver)
     }
 
+    override fun onStop() {
+        super.onStop()
+        realm.close()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         unbindService(mServiceConnection)
@@ -155,7 +172,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             R.id.btn_connection->{
                 if (isConnected){
 
-                    mBluetoothLeService?.disconnect()
+                    doDeActivePower()
                 }else{
 
                     mBluetoothLeService?.connect(strAddress)
@@ -163,12 +180,25 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 progressbar.visibility=View.VISIBLE
             }
             R.id.btn_test->{
+                progressbar.visibility=View.VISIBLE
                 doCharacteristic()
                 Log.d("btnTest","test btn")
             }
-            R.id.btn_save->{
-                Log.d("btnTest","save btn")
-                resetAfterSetup()
+            R.id.btn_save -> {
+                Log.d("btnTest", "save btn")
+
+                Thread {
+                    runOnUiThread {
+                        // TODO: 2021/11/17 do save 
+                        //doSave()
+                    }
+                    runOnUiThread {
+                        resetAfterSetup()
+                    }
+                    runOnUiThread {
+                        savingToast()
+                    }
+                }.start()
             }
             R.id.fail_led_1->{
                 isLED1Pass=false
@@ -537,6 +567,20 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         lps.width=WindowManager.LayoutParams.MATCH_PARENT
         lps.height=WindowManager.LayoutParams.WRAP_CONTENT
         dialog.window?.attributes=lps
+        dialog.export_btn.setOnClickListener {
+
+            Log.d("showresult","click export btn")
+            val result= realm.where(ExamItem::class.java)
+                .findAll() ?: return@setOnClickListener
+
+            val iteration=result.iterator()
+            while (iteration.hasNext()){
+
+                val item=iteration.next()
+
+                Log.d("show_result","${item.aa24Timestamp},${item.tagNumber},${item.voltage}")
+            }
+        }
         dialog.cancel_button.setOnClickListener {
             dialog.dismiss()
         }
@@ -705,12 +749,12 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 resetAfterSetup()
                 progressbar.visibility=View.GONE
             }else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED==action){
-
                 isConnected=true
                 btn_connection.setText(R.string.connected)
                 btn_connection.setBackgroundColor(resources.getColor(android.R.color.holo_green_dark))
                 lower_cover_main.visibility=View.GONE
                 setButtonClickable(true)
+                checkSerial()
                 progressbar.visibility=View.GONE
             }else if (BluetoothLeService.ACTION_DATA_AVAILABLE==action){
                 doTest(p1)
@@ -753,12 +797,36 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         return format.format(cal.time)
     }
 
-    private fun doCharacteristic(){
-
+    private fun doDeActivePower(){
         Thread{
 
             runOnUiThread {
-                progressbar.visibility=View.VISIBLE
+                val byteArray= byteArrayOf((0x00).toByte())
+                characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_CONTROL) as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.activate_power))
+                if (characteristic!=null){
+                    mBluetoothLeService?.writeCharacteristic(characteristic!!,byteArray)
+                }
+            }
+        }.start()
+    }
+    private fun doCharacteristic(){
+
+        Thread{
+            if (!isPowerActivated) {
+                runOnUiThread {
+
+                    val byteArray= byteArrayOf((0x01).toByte())
+                    characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_CONTROL)as BluetoothGattService)
+                            .getCharacteristic(UUID.fromString(GattAttributes.activate_power))
+                    if (characteristic!=null){
+                        mBluetoothLeService?.writeCharacteristic(characteristic!!,byteArray)
+                    }
+                }
+                Thread.sleep(500)
+            }
+
+            runOnUiThread {
                 characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_INFORMATION)as BluetoothGattService)
                         .getCharacteristic(UUID.fromString(GattAttributes.firmware_revision_string))
                 if (characteristic!=null){
@@ -781,12 +849,23 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             }
             Thread.sleep(500)
 
+            runOnUiThread {
+                characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.EXTRA_CONTROL)as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.meter_parameter))
+                if (characteristic!=null){
+                    mBluetoothLeService?.readCharacteristic(characteristic!!)
+                }
+            }
+            Thread.sleep(500)
+
             runOnUiThread{
                 characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_CONTROL)as BluetoothGattService)
                         .getCharacteristic(UUID.fromString(GattAttributes.read_recorded_data))
                 if (characteristic!=null){
                     mBluetoothLeService?.readCharacteristic(characteristic!!)
                 }
+                val calendar=Calendar.getInstance()
+                aa24Epoch=calendar.timeInMillis
                 progressbar.visibility=View.GONE
             }
         }.start()
@@ -852,6 +931,10 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     text_rssi.setTextColor(Color.RED)
                 }
             }
+            GattAttributes.mMeterVersion->{
+                text_meter.text=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
+                return
+            }
             GattAttributes.mReadRecordedData->{
                 val array=intent.getStringArrayListExtra(BluetoothLeService.EXTRA_DATA)
                 if (array!=null){
@@ -911,6 +994,19 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     text_wh.text=deviceConsumption
                 }
             }
+            GattAttributes.mPowerOn->{
+                isPowerActivated=true
+                val calendar=Calendar.getInstance()
+                powerOnEpoch=calendar.timeInMillis
+                return
+            }
+            GattAttributes.mPowerOff->{
+                isPowerActivated=false
+                val calendar=Calendar.getInstance()
+                powerOffEpoch=calendar.timeInMillis
+                mBluetoothLeService?.disconnect()
+                return
+            }
         }
         checkAllPass()
     }
@@ -945,6 +1041,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         text_result.setText(R.string.na)
         text_result.setTextColor(Color.parseColor("#050505"))
+
+        text_wh.setText(R.string.na)
+        text_wh.setTextColor(Color.parseColor("#050505"))
+        text_meter.setText(R.string.na)
+        text_meter.setTextColor(Color.parseColor("#050505"))
 
         isFirmwarePass=false
         isTagPass=false
@@ -989,4 +1090,100 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             }
         }
     }
+    private fun doSave(){
+
+
+        val calendar=Calendar.getInstance()
+        realm.beginTransaction()
+        val item=ExamItem()
+        item.keyIndex=calendar.timeInMillis
+
+        item.serialNumber=serial
+        item.testNumber=testCounts
+
+        item.productLotNumber=strLotNumber
+        item.firmwareNumber=strFirmwareVersion
+        item.macAddress=strAddress
+        item.tagNumber=strTagNumber
+        item.rssi=rssi
+
+        item.current=text_current.text.toString().toFloat()
+        item.voltage=text_voltage.text.toString().toFloat()
+        item.watt=text_watt.text.toString().toFloat()
+        item.powerFactor=text_power_factor.text.toString().toFloat()
+        item.wattHour=text_wh.text.toString().toFloat()
+
+        item.isLEDBlueFlash=isLED1Pass?:false
+        item.isLEDBlueOn=isLED2Pass?:false
+        item.isLEDGreenOn=isLED3Pass?:false
+        item.isLEDRedOn=isLED4Pass?:false
+        item.result=isResultPass
+
+        item.startTime=powerOnEpoch
+        item.endTime=powerOffEpoch
+        item.aa24Timestamp=aa24Epoch
+
+        realm.copyToRealm(item)
+        realm.commitTransaction()
+    }
+
+    private fun createSerialNo():String{
+
+        val strSerial="%04d".format(serial)
+        val strTest="%02d".format(testCounts)
+
+        return ("$strOrderSerialTwo-$strSerial-$strTest")
+    }
+
+    private fun checkSerial(){
+        //檢查之前有沒有用此address的測試記錄
+        val previous=realm.where(ExamItem::class.java)
+                .equalTo("macAddress",strAddress)
+                .findFirst()
+
+
+        if (previous==null){
+            //若記錄為null 表示A.是第一次測試, B.是連了很多次,但未測過此address
+            //testCounts都設為0
+            val lastItem=realm.where(ExamItem::class.java)
+                    .sort("serialNumber",Sort.DESCENDING)
+                    .findFirst()
+
+            //若為B, 則serial+1
+            if (lastItem!=null){
+                serial=lastItem.serialNumber+1
+            }
+            testCounts=0
+            //若為A, 則serial為預設的0
+
+        }else{
+            //若記錄非null, 則之前有測過該address, 從記錄取出serial
+                //testCounts要抓出記錄再+1
+            serial=previous.serialNumber
+            testCounts=checkTestCount()
+        }
+        Log.d("show_result","serial=$serial, test counts=$testCounts")
+    }
+    private fun checkTestCount():Int{
+
+        val result=realm.where(ExamItem::class.java)
+                .equalTo("macAddress",strAddress)
+                .sort("testNumber",Sort.DESCENDING)
+                .findFirst()
+
+        return result!!.testNumber+1
+    }
+
+    private fun savingToast(){
+        val toast=Toast(this)
+        val toastView=LayoutInflater.from(this).inflate(R.layout.custom_toast,null)
+        toastView.alpha=0.7f
+
+        toast.setView(toastView);
+        toast.setGravity(Gravity.FILL, 0, 0);
+        toast.duration = Toast.LENGTH_SHORT;
+        toast.show()
+
+    }
+
 }
