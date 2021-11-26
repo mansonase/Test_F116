@@ -60,6 +60,8 @@
     <string name="ok">OK</string>
     <string name="na">N/A</string>
     <string name="meter">Meter :</string>
+    <string name="total_devices">Total devices :</string>
+    <string name="total_tests">Total tests :</string>
 
     <string name="saved_successfully">Saved Successfully</string>
 

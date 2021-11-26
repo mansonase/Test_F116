@@ -61,6 +61,8 @@
     <string name="ok">OK</string>
     <string name="na">N/A</string>
     <string name="meter">Meter :</string>
+    <string name="total_devices">已测试过装置数 :</string>
+    <string name="total_tests">已测试次数 :</string>
 
     <string name="saved_successfully">Saved Successfully</string>
 </resources>

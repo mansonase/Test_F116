@@ -15,11 +15,8 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.*
 import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.os.Handler
-import android.os.IBinder
-import android.os.Looper
 import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
@@ -40,6 +37,9 @@ import kotlinx.android.synthetic.main.dialog_export.*
 import kotlinx.android.synthetic.main.dialog_header.*
 import kotlinx.android.synthetic.main.dialog_header.cancel_button
 import kotlinx.android.synthetic.main.fragment_barcode.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
     private lateinit var strOrderSerialOne:String
     private lateinit var strOrderSerialTwo:String
-    private lateinit var strLotNumber:String
+    //private lateinit var strLotNumber:String
     private lateinit var strFirmwareVersion:String
     private lateinit var strTagNumber:String
     private var strAddress=""
@@ -79,7 +79,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private var aa24Epoch=0L
 
     private lateinit var calendar:Calendar
-    private lateinit var realm: Realm
     private var testCounts=0
     private var serial=0
 
@@ -120,7 +119,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
 
         calendar=Calendar.getInstance()
-        realm= Realm.getDefaultInstance()
 
         setToolbar()
         initView()
@@ -152,7 +150,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
     override fun onStop() {
         super.onStop()
-        realm.close()
     }
 
     override fun onDestroy() {
@@ -189,8 +186,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
                 Thread {
                     runOnUiThread {
-                        // TODO: 2021/11/17 do save 
-                        //doSave()
+                        doSave()
                     }
                     runOnUiThread {
                         resetAfterSetup()
@@ -317,7 +313,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private fun getPermissionsBLE():Boolean{
         val isPermissionGranted:Boolean
 
-        if (ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+        if ((ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)||
+                (ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)){
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION)){
 
@@ -329,14 +326,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                         { _, _ ->
                             ActivityCompat.requestPermissions(
                                     this,
-                                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE),
                                     1
                             )
                         }.show()
             }else{
                 ActivityCompat.requestPermissions(
                         this,
-                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE),
                         1
                 )
             }
@@ -397,9 +394,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private fun initStandard(){
         strOrderSerialOne=sharedPreferences.getString(GattAttributes.ORDER_SERIAL_1,"0000").toString()
         strOrderSerialTwo=sharedPreferences.getString(GattAttributes.ORDER_SERIAL_2,"00000").toString()
-        strLotNumber=sharedPreferences.getString(GattAttributes.LOT_NUMBER,"0").toString()
+        //strLotNumber=sharedPreferences.getString(GattAttributes.LOT_NUMBER,"0").toString()
         strFirmwareVersion=sharedPreferences.getString(GattAttributes.FIRMWARE,"0").toString()
-        strTagNumber=sharedPreferences.getString(GattAttributes.TAG,"0000").toString()
+        strTagNumber=sharedPreferences.getString(GattAttributes.TAG,"00000000").toString()
         strRssiSmall=sharedPreferences.getString(GattAttributes.RSSI_SMALL,"0").toString()
         strRssiLarge=sharedPreferences.getString(GattAttributes.RSSI_LARGE,"0").toString()
         strProducingTime=sharedPreferences.getString(GattAttributes.PRODUCING_TIME,"0").toString()
@@ -431,7 +428,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         dialog.order_serial_1.hint=strOrderSerialOne
         dialog.order_serial_2.hint=strOrderSerialTwo
-        dialog.order_serial_lot.hint=strLotNumber
+        //dialog.order_serial_lot.hint=strLotNumber
         dialog.firmware_number.hint=strFirmwareVersion
         dialog.tag_number.hint=strTagNumber
         dialog.rssi_small.hint=strRssiSmall
@@ -469,11 +466,13 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             }else{
                 dialog.order_serial_2.hint.toString()
             }
+            /*
             strLotNumber=if (dialog.order_serial_lot.text.isNotEmpty()){
                 dialog.order_serial_lot.text.toString()
             }else{
                 dialog.order_serial_lot.hint.toString()
             }
+             */
             strFirmwareVersion=if (dialog.firmware_number.text.isNotEmpty()){
                 dialog.firmware_number.text.toString()
             }else{
@@ -518,7 +517,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             sharedPreferences.edit()
                     .putString(GattAttributes.ORDER_SERIAL_1,strOrderSerialOne)
                     .putString(GattAttributes.ORDER_SERIAL_2,strOrderSerialTwo)
-                    .putString(GattAttributes.LOT_NUMBER,strLotNumber)
+                    //.putString(GattAttributes.LOT_NUMBER,strLotNumber)
                     .putString(GattAttributes.FIRMWARE,strFirmwareVersion)
                     .putString(GattAttributes.TAG,strTagNumber)
                     .putString(GattAttributes.DEVICE_ADDRESS,strAddress)
@@ -557,6 +556,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
     }
     private fun createDialogExport() {
+        initStandard()
         val dialog=Dialog(this)
         dialog.setContentView(R.layout.dialog_export)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -569,9 +569,17 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         dialog.window?.attributes=lps
         dialog.export_btn.setOnClickListener {
 
+            makingCSV()
+            /*
+            val realm=Realm.getDefaultInstance()
             Log.d("showresult","click export btn")
             val result= realm.where(ExamItem::class.java)
-                .findAll() ?: return@setOnClickListener
+                .findAll()
+            realm.close()
+
+            if (result==null){
+                return@setOnClickListener
+            }
 
             val iteration=result.iterator()
             while (iteration.hasNext()){
@@ -580,10 +588,22 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
                 Log.d("show_result","${item.aa24Timestamp},${item.tagNumber},${item.voltage}")
             }
+
+             */
         }
         dialog.cancel_button.setOnClickListener {
             dialog.dismiss()
         }
+
+        val realm=Realm.getDefaultInstance()
+        val mDevice=realm.where(ExamItem::class.java)
+                .equalTo("testNumber",0.toInt())
+                .count()
+        val mTest=realm.where(ExamItem::class.java)
+                .count()
+        dialog.total_device.text=("${getString(R.string.total_devices)} $mDevice")
+        dialog.total_tests.text=("${getString(R.string.total_tests)} $mTest")
+
         dialog.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
         dialog.show()
         dialog.window?.decorView?.systemUiVisibility=this.window?.decorView?.systemUiVisibility!!
@@ -1092,6 +1112,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     }
     private fun doSave(){
 
+        val realm=Realm.getDefaultInstance()
 
         val calendar=Calendar.getInstance()
         realm.beginTransaction()
@@ -1101,7 +1122,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         item.serialNumber=serial
         item.testNumber=testCounts
 
-        item.productLotNumber=strLotNumber
+        //item.productLotNumber=strLotNumber
         item.firmwareNumber=strFirmwareVersion
         item.macAddress=strAddress
         item.tagNumber=strTagNumber
@@ -1117,6 +1138,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         item.isLEDBlueOn=isLED2Pass?:false
         item.isLEDGreenOn=isLED3Pass?:false
         item.isLEDRedOn=isLED4Pass?:false
+        item.meter=text_meter.text.toString()
         item.result=isResultPass
 
         item.startTime=powerOnEpoch
@@ -1125,17 +1147,22 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         realm.copyToRealm(item)
         realm.commitTransaction()
+
+        realm.close()
     }
 
-    private fun createSerialNo():String{
+    private fun createSerialNo(iSerial:Int,iTestCounts:Int,strSerialTwo:String):String{
 
-        val strSerial="%04d".format(serial)
-        val strTest="%02d".format(testCounts)
+        val strSerial="%04d".format(iSerial)
+        val strTest="%02d".format(iTestCounts)
 
-        return ("$strOrderSerialTwo-$strSerial-$strTest")
+        return ("$strSerialTwo-$strSerial-$strTest")
     }
 
     private fun checkSerial(){
+
+        val realm=Realm.getDefaultInstance()
+
         //檢查之前有沒有用此address的測試記錄
         val previous=realm.where(ExamItem::class.java)
                 .equalTo("macAddress",strAddress)
@@ -1143,18 +1170,23 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
 
         if (previous==null){
-            //若記錄為null 表示A.是第一次測試, B.是連了很多次,但未測過此address
+            //若記錄為null 表示
+                // A.是第一次測試,
+                    // B.是連了很多次,但未測過此address
             //testCounts都設為0
             val lastItem=realm.where(ExamItem::class.java)
                     .sort("serialNumber",Sort.DESCENDING)
                     .findFirst()
 
-            //若為B, 則serial+1
-            if (lastItem!=null){
-                serial=lastItem.serialNumber+1
+            serial = if (lastItem!=null){
+                //case B, 則serial+1
+                lastItem.serialNumber+1
+            }else{
+                //case A, serial=1
+                1
             }
             testCounts=0
-            //若為A, 則serial為預設的0
+            //A or B, testCounts皆0
 
         }else{
             //若記錄非null, 則之前有測過該address, 從記錄取出serial
@@ -1163,15 +1195,24 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             testCounts=checkTestCount()
         }
         Log.d("show_result","serial=$serial, test counts=$testCounts")
+
+        realm.close()
     }
     private fun checkTestCount():Int{
+
+        val realm=Realm.getDefaultInstance()
 
         val result=realm.where(ExamItem::class.java)
                 .equalTo("macAddress",strAddress)
                 .sort("testNumber",Sort.DESCENDING)
                 .findFirst()
 
-        return result!!.testNumber+1
+        if (result==null)return 0
+
+        val count=result.testNumber+1
+
+        realm.close()
+        return count
     }
 
     private fun savingToast(){
@@ -1179,11 +1220,164 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         val toastView=LayoutInflater.from(this).inflate(R.layout.custom_toast,null)
         toastView.alpha=0.7f
 
-        toast.setView(toastView);
-        toast.setGravity(Gravity.FILL, 0, 0);
-        toast.duration = Toast.LENGTH_SHORT;
+        toast.setView(toastView)
+        toast.setGravity(Gravity.FILL, 0, 0)
+        toast.duration = Toast.LENGTH_SHORT
         toast.show()
 
+    }
+    private fun makingCSV(){
+
+        Thread{
+
+            runOnUiThread {
+                progressbar.visibility=View.VISIBLE
+            }
+
+            val realm=Realm.getDefaultInstance()
+            val count=realm.where(ExamItem::class.java)
+                    .equalTo("testNumber",0.toInt())
+                    .count().toInt()
+
+            if (count==0){
+                realm.close()
+                runOnUiThread {
+                    progressbar.visibility=View.GONE
+                }
+                return@Thread
+            }
+
+            ///////////////////////////////////
+            val date=SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(System.currentTimeMillis())
+            val format=SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+            val fileName="[$strOrderSerialOne-$strOrderSerialTwo].csv"
+
+            val title= arrayOf(
+                    "Serial Number",
+                    "Firmware:$strFirmwareVersion",
+                    "MAC address",
+                    "TAG:$strTagNumber",
+                    "BLE Rssi:-$strRssiSmall~-$strRssiLarge",
+                    "Current:${GattAttributes.CURRENT_LOW}~${GattAttributes.CURRENT_HIGH}",
+                    "Voltage:${GattAttributes.VOLTAGE_LOW}~${GattAttributes.VOLTAGE_HIGH}",
+                    "Watt:${GattAttributes.WATT_LOW}~${GattAttributes.WATT_HIGH}",
+                    "PF:${GattAttributes.PF_LOW}~${GattAttributes.PF_HIGH}",
+                    "Watt/Hour",
+                    "LED1:Blue Flash",
+                    "LED2:Blue",
+                    "LED3:Green Flash",
+                    "LED4:Red",
+                    "Meter",
+                    "Result",
+                    "TimeStamp")
+
+            val csvText=StringBuffer()
+            csvText.append("Order Number:$strOrderSerialOne-$strOrderSerialTwo\n")
+            csvText.append("Producing Date:$date\n")
+            val department=when(intTestDepartment){
+                1->"QA"
+                2->"RD"
+                else->"IPQC"
+            }
+            csvText.append("Test department:$department\n\n")
+
+            for (i in title.indices){
+                csvText.append("${title[i]},")
+            }
+            csvText.append("\n")
+
+            for (i in 1 .. count){
+
+                val result=realm.where(ExamItem::class.java)
+                        .equalTo("serialNumber",i)
+                        .sort("testNumber",Sort.ASCENDING)
+                        .findAll()
+
+                val iterator=result.iterator()
+                while (iterator.hasNext()){
+                    val mItem=iterator.next()
+
+                    val serialNumber=createSerialNo(mItem.serialNumber,mItem.testNumber,strOrderSerialTwo)
+                    val firmware=mItem.firmwareNumber
+                    val macAddress=mItem.macAddress
+                    val tag=mItem.tagNumber
+                    val rssi=mItem.rssi.toString()
+                    val current=mItem.current.toString()
+                    val voltage=mItem.voltage.toString()
+                    val watt=mItem.watt.toString()
+                    val pf=mItem.powerFactor.toString()
+                    val wh=mItem.wattHour.toString()
+                    val led1=mItem.isLEDBlueFlash.toString()
+                    val led2=mItem.isLEDBlueOn.toString()
+                    val led3=mItem.isLEDGreenOn.toString()
+                    val led4=mItem.isLEDRedOn.toString()
+                    val meter=mItem.meter
+                    val finalResult=mItem.result.toString()
+                    val timestamp=format.format(mItem.aa24Timestamp)
+
+                    csvText.append("$serialNumber,")
+                            .append("$firmware,")
+                            .append("$macAddress,")
+                            .append("$tag,")
+                            .append("$rssi,")
+                            .append("$current,")
+                            .append("$voltage,")
+                            .append("$watt,")
+                            .append("$pf,")
+                            .append("$wh,")
+                            .append("$led1,")
+                            .append("$led2,")
+                            .append("$led3,")
+                            .append("$led4,")
+                            .append("$meter,")
+                            .append("$finalResult,")
+                            .append("$timestamp\n")
+
+                }
+            }
+            if (!realm.isClosed){
+                realm.close()
+            }
+            Log.d("all","makingCSV:\n$csvText")
+            runOnUiThread {
+
+                val builder=StrictMode.VmPolicy.Builder()
+                StrictMode.setVmPolicy(builder.build())
+                builder.detectFileUriExposure()
+
+                progressbar.visibility=View.GONE
+                try {
+                    val out=openFileOutput(fileName,Context.MODE_PRIVATE)
+                    out.write(csvText.toString().toByteArray())
+                    out.close()
+                    //////////////////////////////////////////
+                    //val cw=ContextWrapper(applicationContext)
+                    //val directory=cw.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+                    //val fileLocation=File(directory,fileName)
+                    //val fileLocation=File(Environment.getExternalStorageDirectory().absolutePath,fileName)
+                    val fileLocation=File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),fileName)
+                    val fos=FileOutputStream(fileLocation)
+                    fos.write(csvText.toString().toByteArray())
+
+
+
+                    /*
+                    val path=Uri.fromFile(fileLocation)
+                    val fileIntent=Intent(Intent.ACTION_SEND)
+                    fileIntent.type="text/csv"
+                    fileIntent.putExtra(Intent.EXTRA_SUBJECT,fileName)
+                    fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    fileIntent.putExtra(Intent.EXTRA_STREAM,path)
+                    startActivity(Intent.createChooser(fileIntent,"output files"))
+
+                     */
+                    fos.close()
+                    savingToast()
+                }catch (e:IOException){
+                    e.printStackTrace()
+                }
+            }
+        }.start()
     }
 
 }

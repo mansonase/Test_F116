@@ -120,7 +120,8 @@
         app:layout_constraintTop_toTopOf="@+id/order_serial_1"
         app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
         app:layout_constraintStart_toEndOf="@+id/order_serial_2"
-        app:layout_constraintEnd_toStartOf="@+id/order_serial_lot"/>
+        app:layout_constraintEnd_toStartOf="@+id/order_serial_lot"
+        android:visibility="gone"/>
 
     <EditText
         android:layout_width="30dp"
@@ -137,7 +138,8 @@
         android:background="@drawable/main_white_four_15_word_blue_2"
         android:paddingStart="10px"
         android:nextFocusForward="@+id/firmware_number"
-        android:imeOptions="flagNoExtractUi|actionNext"/>
+        android:imeOptions="flagNoExtractUi|actionNext"
+        android:visibility="gone"/>
 
     <TextView
         android:layout_width="wrap_content"

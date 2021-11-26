@@ -90,6 +90,10 @@ open class ExamItem :RealmObject(){
     get() {return field}
     set(value) {field=value}
 
+    var meter:String=""
+    get() {return field}
+    set(value) {field=value}
+
     //result
     var result:Boolean=false
     get() {return field}
