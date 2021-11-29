@@ -19,12 +19,12 @@ class GattAttributes {
         const val TEST_DEP="test_department"
         const val PRODUCING_TIME="producing_time"
 
-        const val CURRENT_LOW=4.87f
-        const val CURRENT_HIGH=5.12f
-        const val VOLTAGE_LOW=224f
-        const val VOLTAGE_HIGH=236f
-        const val WATT_LOW=1121f
-        const val WATT_HIGH=1178f
+        const val CURRENT_LOW=1.8f
+        const val CURRENT_HIGH=2.4f
+        const val VOLTAGE_LOW=223f
+        const val VOLTAGE_HIGH=237f
+        const val WATT_LOW=470f
+        const val WATT_HIGH=530f
         const val PF_LOW=0.98f
         const val PF_HIGH=1f
 

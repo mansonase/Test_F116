@@ -28,6 +28,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import androidx.core.content.FileProvider
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import io.realm.Realm
@@ -1226,6 +1227,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         toast.show()
 
     }
+
+    private fun booleanToString(boolean: Boolean):String{
+        return if (boolean){
+            getString(R.string.pass)
+        }else{
+            getString(R.string.fail)
+        }
+    }
     private fun makingCSV(){
 
         Thread{
@@ -1307,10 +1316,10 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     val watt=mItem.watt.toString()
                     val pf=mItem.powerFactor.toString()
                     val wh=mItem.wattHour.toString()
-                    val led1=mItem.isLEDBlueFlash.toString()
-                    val led2=mItem.isLEDBlueOn.toString()
-                    val led3=mItem.isLEDGreenOn.toString()
-                    val led4=mItem.isLEDRedOn.toString()
+                    val led1=booleanToString(mItem.isLEDBlueFlash)
+                    val led2=booleanToString(mItem.isLEDBlueOn)
+                    val led3=booleanToString(mItem.isLEDGreenOn)
+                    val led4=booleanToString(mItem.isLEDRedOn)
                     val meter=mItem.meter
                     val finalResult=mItem.result.toString()
                     val timestamp=format.format(mItem.aa24Timestamp)
@@ -1341,9 +1350,12 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             Log.d("all","makingCSV:\n$csvText")
             runOnUiThread {
 
+                /*
                 val builder=StrictMode.VmPolicy.Builder()
                 StrictMode.setVmPolicy(builder.build())
                 builder.detectFileUriExposure()
+
+                 */
 
                 progressbar.visibility=View.GONE
                 try {
@@ -1358,20 +1370,24 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     val fileLocation=File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),fileName)
                     val fos=FileOutputStream(fileLocation)
                     fos.write(csvText.toString().toByteArray())
+                    fos.close()
 
 
 
-                    /*
-                    val path=Uri.fromFile(fileLocation)
+                    //val path=Uri.fromFile(fileLocation)
+                    val authority=packageName.plus(".fileProvider")
+                    val path=FileProvider.getUriForFile(this,authority,fileLocation)
+
                     val fileIntent=Intent(Intent.ACTION_SEND)
                     fileIntent.type="text/csv"
+                    fileIntent.data=path
                     fileIntent.putExtra(Intent.EXTRA_SUBJECT,fileName)
                     fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     fileIntent.putExtra(Intent.EXTRA_STREAM,path)
                     startActivity(Intent.createChooser(fileIntent,"output files"))
 
-                     */
-                    fos.close()
+
+
                     savingToast()
                 }catch (e:IOException){
                     e.printStackTrace()
