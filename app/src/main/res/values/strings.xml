@@ -42,18 +42,18 @@
     <string name="w">W</string>
     <string name="wh">WH :</string>
     <string name="power_factor">Power Factor :</string>
-    <string name="led_blue_flash">LED 1 :</string>
-    <string name="led_blue_on">LED 2 :</string>
-    <string name="led_green_flash">LED 3 :</string>
-    <string name="led_red_on">LED 4 :</string>
+    <string name="led_blue_flash">Blue Flash :</string>
+    <string name="led_blue_on">Blue :</string>
+    <string name="led_green_flash">Green Flash :</string>
+    <string name="led_red_on">Red :</string>
     <string name="result">Result :</string>
     <string name="barcode">Barcode</string>
     <string name="small">Small</string>
     <string name="large">Large</string>
     <string name="back">Back</string>
     <string name="renew">Renew</string>
-    <string name="connected">Connected</string>
-    <string name="disconnected">Disconnected</string>
+    <string name="connected">Connect</string>
+    <string name="disconnected">Disconnect</string>
     <string name="test">Test</string>
     <string name="alert">Alert</string>
     <string name="not_in_range">Not in Normal Range</string>
@@ -62,8 +62,11 @@
     <string name="meter">Meter :</string>
     <string name="total_devices">Total devices :</string>
     <string name="total_tests">Total tests :</string>
+    <string name="unable_save">Unable to save!!</string>
+    <string name="scan_list">Scan List</string>
 
     <string name="saved_successfully">Saved Successfully</string>
+    <string name="pass_saved_successfully">Pass and\n\nSaved Successfully</string>
 
     <string-array name="test_dep">
         <item>IPQC</item>

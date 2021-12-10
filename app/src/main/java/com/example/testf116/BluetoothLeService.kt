@@ -428,13 +428,15 @@ class BluetoothLeService():Service() {
 
                 var data=""
                 for (i in characteristic.value.indices){
-                    data+=characteristic.value[i].toChar()
+                    if (characteristic.value[i].toInt()!=0) {
+                        data += characteristic.value[i].toChar()
+                    }
                 }
 
                 intent.putExtra(EXTRA_DATA, data)
                 intent.putExtra(CHARACTERISTIC,GattAttributes.mNfcTagId)
 
-                Log.d(TAG,"new $data")
+                Log.d(TAG,"newTAG $data")
             }
             GattAttributes.charging_latency->{
                 //for read only

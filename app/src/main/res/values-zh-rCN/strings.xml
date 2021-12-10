@@ -9,10 +9,10 @@
     <string name="allow_permission">允許權限</string>
 
 
-    <string name="export">Export</string>
-    <string name="header">Header</string>
-    <string name="save">Save</string>
-    <string name="cancel">Cancel</string>
+    <string name="export">输出</string>
+    <string name="header">表头格式</string>
+    <string name="save">储存</string>
+    <string name="cancel">取消</string>
     <string name="pass">Pass</string>
     <string name="p">P</string>
     <string name="fail">Fail</string>
@@ -43,10 +43,10 @@
     <string name="w">W</string>
     <string name="wh">WH :</string>
     <string name="power_factor">功率因数 :</string>
-    <string name="led_blue_flash">LED 1 :</string>
-    <string name="led_blue_on">LED 2 :</string>
-    <string name="led_green_flash">LED 3 :</string>
-    <string name="led_red_on">LED 4 :</string>
+    <string name="led_blue_flash">闪蓝灯 :</string>
+    <string name="led_blue_on">蓝灯 :</string>
+    <string name="led_green_flash">闪绿灯 :</string>
+    <string name="led_red_on">红灯 :</string>
     <string name="result">测试结果 :</string>
     <string name="barcode">条码</string>
     <string name="small">Small</string>
@@ -63,6 +63,9 @@
     <string name="meter">Meter :</string>
     <string name="total_devices">已测试过装置数 :</string>
     <string name="total_tests">已测试次数 :</string>
+    <string name="unable_save">无法储存！！</string>
+    <string name="scan_list">扫瞄列表</string>
 
-    <string name="saved_successfully">Saved Successfully</string>
+    <string name="saved_successfully">储存成功</string>
+    <string name="pass_saved_successfully">测试通过\n\n储存成功</string>
 </resources>

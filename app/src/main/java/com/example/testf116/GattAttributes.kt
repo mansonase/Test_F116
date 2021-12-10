@@ -29,6 +29,8 @@ class GattAttributes {
         const val PF_HIGH=1f
 
 
+
+
 /*
         const val CURRENT_LOW=-1f
         const val CURRENT_HIGH=1f
@@ -40,6 +42,8 @@ class GattAttributes {
         const val PF_HIGH=1f
 
  */
+
+
 
         const val CONFIG = "00002902-0000-1000-8000-00805f9b34fb"
 
