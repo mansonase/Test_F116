@@ -76,6 +76,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private lateinit var strFirmwareVersion:String
     private lateinit var strTagNumber:String
     private var strAddress=""
+    private lateinit var strMeter:String
     private lateinit var strRssiSmall:String
     private lateinit var strRssiLarge:String
     private lateinit var strProducingTime:String
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
     private var isFirmwarePass:Boolean?=null
     private var isTagPass:Boolean?=null
+    private var isMeterpass:Boolean?=null
     private var isRssiPass:Boolean?=null
     private var isCurrentPass:Boolean?=null
     private var isVoltagePass:Boolean?=null
@@ -146,6 +148,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         }
 
  */
+        if (deviceArrayList!=null&&rssiArrayList!=null) {
+            createDialogScanResult()
+        }
     }
 
     override fun onResume() {
@@ -154,9 +159,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         registerReceiver(mReceiver, makeGattUpdateIntentFilter())
 
-        if (deviceArrayList!=null&&rssiArrayList!=null) {
-            createDialogScanResult()
-        }
 
     }
 
@@ -416,6 +418,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         //strLotNumber=sharedPreferences.getString(GattAttributes.LOT_NUMBER,"0").toString()
         strFirmwareVersion=sharedPreferences.getString(GattAttributes.FIRMWARE,"0").toString()
         strTagNumber=sharedPreferences.getString(GattAttributes.TAG,"00000000").toString()
+        strMeter=sharedPreferences.getString(GattAttributes.METER,"000000").toString()
         strRssiSmall=sharedPreferences.getString(GattAttributes.RSSI_SMALL,"0").toString()
         strRssiLarge=sharedPreferences.getString(GattAttributes.RSSI_LARGE,"0").toString()
         strProducingTime=sharedPreferences.getString(GattAttributes.PRODUCING_TIME,"0").toString()
@@ -450,6 +453,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         //dialog.order_serial_lot.hint=strLotNumber
         dialog.firmware_number.hint=strFirmwareVersion
         dialog.tag_number.hint=strTagNumber
+        dialog.meter.hint=strMeter
         dialog.rssi_small.hint=strRssiSmall
         dialog.rssi_large.hint=strRssiLarge
         calendar= Calendar.getInstance()
@@ -503,6 +507,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             }else{
                 dialog.tag_number.hint.toString()
             }
+            strMeter=if (dialog.meter.text.isNotEmpty()){
+                dialog.meter.text.toString()
+            }else{
+                dialog.meter.hint.toString()
+            }
             strRssiSmall=if (dialog.rssi_small.text.isNotEmpty()){
                 dialog.rssi_small.text.toString()
             }else{
@@ -541,6 +550,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     .putString(GattAttributes.FIRMWARE,strFirmwareVersion)
                     .putString(GattAttributes.TAG,strTagNumber)
                     .putString(GattAttributes.DEVICE_ADDRESS,strAddress)
+                    .putString(GattAttributes.METER,strMeter)
                     .putString(GattAttributes.RSSI_SMALL,strRssiSmall)
                     .putString(GattAttributes.RSSI_LARGE,strRssiLarge)
                     .putString(GattAttributes.PRODUCING_TIME,strProducingTime)
@@ -781,7 +791,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
             if (result.device.name==null)return
 
-            if (result.device.name.substring(0,6).trim()!="eCloud"&&result.device.name.substring(0,4).trim()!="F100")return
+            //if (result.device.name.substring(0,6).trim()!="eCloud"&&result.device.name.substring(0,4).trim()!="F100")return
+            if (result.device.name.substring(0,6).trim()!="eCloud")return
 
             //scanLeDevice(false)
 
@@ -929,6 +940,12 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         Thread{
             runOnUiThread {
                 progressbar.visibility=View.VISIBLE
+                Thread{
+                    Thread.sleep(13_000)
+                    runOnUiThread {
+                        progressbar.visibility=View.GONE
+                    }
+                }.start()
             }
 
             while (!isPowerActivated){
@@ -1039,7 +1056,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             }
 
 
-            Thread.sleep(1000)
+            Thread.sleep(4000)
 
 
             runOnUiThread {
@@ -1161,7 +1178,19 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 }
             }
             GattAttributes.mMeterVersion->{
-                text_meter.text=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
+                val deviceMeter=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
+
+                isMeterpass=(deviceMeter==strMeter)
+
+                text_meter.text=deviceMeter
+
+                if (isMeterpass!!){
+                    show_meter.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                    text_meter.setTextColor(Color.parseColor("#050505"))
+                }else{
+                    show_meter.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                    text_meter.setTextColor(Color.RED)
+                }
             }
             GattAttributes.mReadRecordedData->{
                 val array=intent.getStringArrayListExtra(BluetoothLeService.EXTRA_DATA)
@@ -1258,7 +1287,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     text_watt.setTextColor(Color.parseColor("#050505"))
                 }else{
                     show_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                    text_voltage.setTextColor(Color.RED)
+                    text_watt.setTextColor(Color.RED)
                 }
             }
             GattAttributes.mPowerFactor->{
@@ -1308,6 +1337,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         show_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
         show_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
         show_power_factor.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_meter.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
         show_led_1.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
         show_led_2.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
         show_led_3.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
@@ -1343,6 +1373,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         isVoltagePass=null
         isWattPass=null
         isPFPass=null
+        isMeterpass=null
 
         isLED1Pass=null
         isLED2Pass=null
@@ -1365,11 +1396,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private fun checkAllPass(){
 
         if (isLED1Pass!=null&&isLED2Pass!=null&&isLED3Pass!=null&&isLED4Pass!=null&&
-            isFirmwarePass!=null&&isTagPass!=null&&isRssiPass!=null&&isCurrentPass!=null&&isVoltagePass!=null&&isWattPass!=null&&isPFPass!=null){
+            isFirmwarePass!=null&&isTagPass!=null&&isRssiPass!=null&&isCurrentPass!=null&&isVoltagePass!=null&&isWattPass!=null&&isPFPass!=null&&isMeterpass!=null){
 
             isAllowedSaving=true
 
-            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&isFirmwarePass!!&&isTagPass!!&&isRssiPass!!&&isCurrentPass!!&&isVoltagePass!!&&isWattPass!!&&isPFPass!!){
+            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&isFirmwarePass!!&&isTagPass!!&&isRssiPass!!&&isCurrentPass!!&&isVoltagePass!!&&isWattPass!!&&isPFPass!!&&isMeterpass!!){
 
                 isResultPass=true
                 text_result.setTextColor(Color.GREEN)
@@ -1405,7 +1436,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         //item.productLotNumber=strLotNumber
         item.firmwareNumber=strFirmwareVersion
         item.macAddress=strAddress
-        item.tagNumber=strTagNumber
+        item.tagNumber=text_tag.text.toString()
         item.rssi=rssi
 
         item.current=text_current.text.toString().toFloat()
@@ -1613,7 +1644,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     val led3=booleanToString(mItem.isLEDGreenOn)
                     val led4=booleanToString(mItem.isLEDRedOn)
                     val meter=mItem.meter
-                    val finalResult=mItem.result.toString()
+                    val finalResult=booleanToString(mItem.result)
                     calendar.timeInMillis=mItem.aa24Timestamp
                     val timestamp=format.format(calendar.time)
 
@@ -1681,7 +1712,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
 
 
-                    savingToast()
+                    //savingToast()
                 }catch (e:IOException){
                     e.printStackTrace()
                 }
@@ -1699,7 +1730,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         fun addDevice(device:BluetoothDevice,rssi:Int){
             if (device.name==null)return
 
-            if ((device.name.substring(0,6).trim()=="eCloud")||(device.name.substring(0,4).trim()=="F100")){
+            //(device.name.substring(0,6).trim()=="eCloud")||(device.name.substring(0,4).trim()=="F100")
+            if (device.name.substring(0,6).trim()=="eCloud"){
 
                 if (mBleDevices.contains(device)){
                     return
@@ -1727,9 +1759,12 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             holder.txRssi.text=mRssiList[position].toString()
             holder.clDevice.setOnClickListener {
 
-                strAddress=mBleDevices[position].address
-                deviceName=mBleDevices[position].name
-                rssi=mRssiList[position]
+                //strAddress=mBleDevices[position].address
+                strAddress=holder.txAddress.text.toString()
+                //deviceName=mBleDevices[position].name
+                deviceName=holder.txName.text.toString()
+                //rssi=mRssiList[position]
+                rssi=holder.txRssi.text.toString().toInt()
                 toolbar?.title=strAddress
 
                 upper_cover_main.visibility=View.GONE

@@ -53,8 +53,8 @@
     <string name="large">Large</string>
     <string name="back">Back</string>
     <string name="renew">扫描</string>
-    <string name="connected">已连接</string>
-    <string name="disconnected">已断开</string>
+    <string name="connected">连接</string>
+    <string name="disconnected">断开</string>
     <string name="test">测试</string>
     <string name="alert">警告</string>
     <string name="not_in_range">不在合理范围</string>

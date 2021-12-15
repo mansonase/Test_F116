@@ -276,9 +276,9 @@ class BluetoothLeService():Service() {
             }
             GattAttributes.current->{
 
-                val data =  ((characteristic.value[0].toInt() and (0xFF))*256*256+
+                val data =  (((characteristic.value[0].toInt() and (0xFF))*256*256+
                              (characteristic.value[1].toInt() and (0xFF))*256+
-                             (characteristic.value[2].toInt() and (0xFF))).toString()
+                             (characteristic.value[2].toInt() and (0xFF))).toFloat()/1000f).toString()
 
                 intent.putExtra(EXTRA_DATA, data)
                 intent.putExtra(CHARACTERISTIC,GattAttributes.mCurrent)
@@ -476,7 +476,13 @@ class BluetoothLeService():Service() {
                 intent.putExtra(CHARACTERISTIC,GattAttributes.mMachineStatus)
             }
             GattAttributes.meter_parameter->{
-                val data=characteristic.value.toHexString()
+                //val data=characteristic.value.toHexString()
+                var data=""
+                val format=DecimalFormat("00")
+                for (i in 0 until 3){
+                    data+=format.format(characteristic.value[i].toString(16).toInt())
+                }
+                Log.d("meterparameter","$data......")
                 intent.putExtra(EXTRA_DATA,data)
                 intent.putExtra(CHARACTERISTIC,GattAttributes.mMeterVersion)
             }

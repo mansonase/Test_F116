@@ -14,11 +14,12 @@ class GattAttributes {
         const val FIRMWARE="firmware"
         const val MAC_ID="mac_id"
         const val TAG="tag"
+        const val METER="meter"
         const val RSSI_SMALL="rssi_small"
         const val RSSI_LARGE="rssi_large"
         const val TEST_DEP="test_department"
         const val PRODUCING_TIME="producing_time"
-
+        
         const val CURRENT_LOW=1.8f
         const val CURRENT_HIGH=2.4f
         const val VOLTAGE_LOW=223f
@@ -36,12 +37,16 @@ class GattAttributes {
         const val CURRENT_HIGH=1f
         const val VOLTAGE_LOW=100f
         const val VOLTAGE_HIGH=190f
-        const val WATT_LOW=-1f
-        const val WATT_HIGH=1f
+        const val WATT_LOW=0f
+        const val WATT_HIGH=10f
         const val PF_LOW=-1f
         const val PF_HIGH=1f
 
+
+
  */
+
+
 
 
 

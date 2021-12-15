@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="400dp"
+    android:layout_height="450dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/main_white_four_15_word_blue_2"
     android:orientation="vertical">
@@ -107,7 +107,7 @@
         app:layout_constraintEnd_toStartOf="@+id/order_serial_dash_2"
         android:background="@drawable/main_white_four_15_word_blue_2"
         android:paddingStart="10px"
-        android:nextFocusForward="@+id/order_serial_lot"
+        android:nextFocusForward="@+id/firmware_number"
         android:imeOptions="actionNext|flagNoExtractUi"/>
 
     <TextView
@@ -240,8 +240,36 @@
         app:layout_constraintTop_toBottomOf="@+id/producing_time"
         app:layout_constraintStart_toStartOf="@+id/producing_time"
         app:layout_constraintEnd_toEndOf="@+id/producing_time"
-        app:layout_constraintBottom_toTopOf="@+id/rssi_small"
+        app:layout_constraintBottom_toTopOf="@+id/meter"
         android:paddingVertical="3dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@+id/testing_department_title"
+        app:layout_constraintTop_toTopOf="@+id/meter"
+        app:layout_constraintBottom_toBottomOf="@+id/meter"
+        android:text="@string/meter"
+        android:textColor="@color/word_blue"
+        android:textSize="16dp"
+        />
+
+
+    <EditText
+        android:layout_width="70dp"
+        android:layout_height="30dp"
+        android:id="@+id/meter"
+        app:layout_constraintStart_toStartOf="@+id/testing_department"
+        app:layout_constraintTop_toBottomOf="@+id/testing_department"
+        app:layout_constraintBottom_toTopOf="@+id/rssi_small"
+        android:maxLength="6"
+        android:textSize="16dp"
+        android:textColor="@color/word_black"
+        android:inputType="number"
+        android:paddingStart="10px"
+        android:background="@drawable/main_white_four_15_word_blue_2"
+        android:nextFocusForward="@+id/meter_month"
+        android:imeOptions="actionNext|flagNoExtractUi"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -264,7 +292,7 @@
         android:textColor="@color/word_black"
         app:layout_constraintTop_toTopOf="@+id/rssi_small"
         app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
-        app:layout_constraintStart_toStartOf="@+id/testing_department" />
+        app:layout_constraintStart_toStartOf="@+id/meter" />
 
     <EditText
         android:layout_width="50dp"
@@ -273,10 +301,9 @@
         android:maxLength="2"
         android:textColor="@color/word_black"
         android:textSize="16dp"
-
         android:paddingStart="10px"
         android:inputType="number"
-        app:layout_constraintTop_toBottomOf="@+id/testing_department"
+        app:layout_constraintTop_toBottomOf="@+id/meter"
         app:layout_constraintStart_toEndOf="@+id/rssi_small_sign"
         app:layout_constraintBottom_toTopOf="@+id/save_button"
         android:background="@drawable/main_white_four_15_word_blue_2"
