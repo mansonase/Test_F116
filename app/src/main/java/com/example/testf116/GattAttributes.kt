@@ -19,7 +19,7 @@ class GattAttributes {
         const val RSSI_LARGE="rssi_large"
         const val TEST_DEP="test_department"
         const val PRODUCING_TIME="producing_time"
-        
+
         const val CURRENT_LOW=1.8f
         const val CURRENT_HIGH=2.4f
         const val VOLTAGE_LOW=223f

@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.encoder.QRCode
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import io.realm.Realm
 import io.realm.Sort
@@ -332,10 +333,24 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     }
 
     private fun getPermissionsBLE():Boolean{
+
+        val mManifest:MutableList<String> = mutableListOf()
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+
+            mManifest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            mManifest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            mManifest.add(Manifest.permission.BLUETOOTH_SCAN)
+            mManifest.add(Manifest.permission.BLUETOOTH_CONNECT)
+            mManifest.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+        }else{
+            mManifest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            mManifest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
         val isPermissionGranted:Boolean
 
         if ((ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)||
-                (ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)){
+                (ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)||
+            (ActivityCompat.checkSelfPermission(this,Manifest.permission.BLUETOOTH_SCAN)!=PackageManager.PERMISSION_GRANTED)){
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION)){
 
@@ -347,14 +362,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                         { _, _ ->
                             ActivityCompat.requestPermissions(
                                     this,
-                                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                                    mManifest.toTypedArray(),
                                     1
                             )
                         }.show()
             }else{
                 ActivityCompat.requestPermissions(
                         this,
-                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        mManifest.toTypedArray(),
                         1
                 )
             }
@@ -666,6 +681,22 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 )
             )
             dialog.text_mac.text=strAddress
+
+            val address=strAddress.split(":")
+            var nameAndMac="F100"
+            for (i in address.indices){
+                nameAndMac+=address[i]
+            }
+
+            dialog.barcode_name_mac.setImageBitmap(
+                codeAsBitmap(
+                    nameAndMac,
+                    BarcodeFormat.CODE_128
+                ,900,
+                    200
+                )
+            )
+            dialog.text_name_mac.text=nameAndMac
         }
 
         if (deviceName.isNotEmpty()) {
@@ -792,7 +823,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             if (result.device.name==null)return
 
             //if (result.device.name.substring(0,6).trim()!="eCloud"&&result.device.name.substring(0,4).trim()!="F100")return
-            if (result.device.name.substring(0,6).trim()!="eCloud")return
+            if (!result.device.name.contains("eCloud"))return
 
             //scanLeDevice(false)
 
@@ -1731,7 +1762,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             if (device.name==null)return
 
             //(device.name.substring(0,6).trim()=="eCloud")||(device.name.substring(0,4).trim()=="F100")
-            if (device.name.substring(0,6).trim()=="eCloud"){
+            if (device.name.contains("eCloud")){
 
                 if (mBleDevices.contains(device)){
                     return
