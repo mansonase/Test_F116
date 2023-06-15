@@ -281,7 +281,8 @@
                 app:layout_constraintTop_toTopOf="@+id/title_meter"
                 app:layout_constraintBottom_toBottomOf="@+id/title_meter"
                 app:layout_constraintStart_toStartOf="@+id/show_firmware"
-                android:src="@drawable/ic_baseline_do_not_disturb_24"/>
+                android:src="@drawable/ic_baseline_do_not_disturb_24"
+                android:visibility="gone"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -291,7 +292,8 @@
                 android:text="@string/meter"
                 android:textColor="@color/word_black"
                 app:layout_constraintTop_toBottomOf="@+id/title_power_factor"
-                app:layout_constraintStart_toStartOf="@+id/title_firmware"/>
+                app:layout_constraintStart_toStartOf="@+id/title_firmware"
+                android:visibility="gone"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -304,7 +306,8 @@
                 app:layout_constraintStart_toEndOf="@+id/title_meter"
                 app:layout_constraintTop_toTopOf="@+id/title_meter"
                 app:layout_constraintBottom_toBottomOf="@+id/title_meter"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:visibility="gone"/>
 
 
             <TextView

@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
     private var isFirmwarePass:Boolean?=null
     private var isTagPass:Boolean?=null
-    private var isMeterpass:Boolean?=null
+    //private var isMeterpass:Boolean?=null
     private var isRssiPass:Boolean?=null
     private var isCurrentPass:Boolean?=null
     private var isVoltagePass:Boolean?=null
@@ -1031,8 +1031,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             runOnUiThread {
                 mBluetoothLeService?.readRemoteRssii()
             }
-            Thread.sleep(500)
 
+            /*
+            Thread.sleep(500)
             runOnUiThread {
                 characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.EXTRA_CONTROL)as BluetoothGattService)
                         .getCharacteristic(UUID.fromString(GattAttributes.meter_parameter))
@@ -1040,6 +1041,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     mBluetoothLeService?.readCharacteristic(characteristic!!)
                 }
             }
+
+             */
             Thread.sleep(500)
 
             runOnUiThread {
@@ -1208,6 +1211,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     text_rssi.setTextColor(Color.RED)
                 }
             }
+            /*
             GattAttributes.mMeterVersion->{
                 val deviceMeter=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
 
@@ -1223,6 +1227,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     text_meter.setTextColor(Color.RED)
                 }
             }
+
+             */
             GattAttributes.mReadRecordedData->{
                 val array=intent.getStringArrayListExtra(BluetoothLeService.EXTRA_DATA)
                 if (array!=null){
@@ -1404,7 +1410,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         isVoltagePass=null
         isWattPass=null
         isPFPass=null
-        isMeterpass=null
+        //isMeterpass=null
 
         isLED1Pass=null
         isLED2Pass=null
@@ -1425,13 +1431,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         btn_save.isClickable=clickable
     }
     private fun checkAllPass(){
-
+        //6/15去掉 isMeterpass
         if (isLED1Pass!=null&&isLED2Pass!=null&&isLED3Pass!=null&&isLED4Pass!=null&&
-            isFirmwarePass!=null&&isTagPass!=null&&isRssiPass!=null&&isCurrentPass!=null&&isVoltagePass!=null&&isWattPass!=null&&isPFPass!=null&&isMeterpass!=null){
+            isFirmwarePass!=null&&isTagPass!=null&&isRssiPass!=null&&isCurrentPass!=null&&isVoltagePass!=null&&isWattPass!=null&&isPFPass!=null){
 
             isAllowedSaving=true
 
-            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&isFirmwarePass!!&&isTagPass!!&&isRssiPass!!&&isCurrentPass!!&&isVoltagePass!!&&isWattPass!!&&isPFPass!!&&isMeterpass!!){
+            //6/15去掉 isMeterpass
+            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&isFirmwarePass!!&&isTagPass!!&&isRssiPass!!&&isCurrentPass!!&&isVoltagePass!!&&isWattPass!!&&isPFPass!!){
 
                 isResultPass=true
                 text_result.setTextColor(Color.GREEN)
