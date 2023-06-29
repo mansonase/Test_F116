@@ -1032,7 +1032,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 mBluetoothLeService?.readRemoteRssii()
             }
 
-            /*
             Thread.sleep(500)
             runOnUiThread {
                 characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.EXTRA_CONTROL)as BluetoothGattService)
@@ -1042,7 +1041,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 }
             }
 
-             */
             Thread.sleep(500)
 
             runOnUiThread {
@@ -1211,14 +1209,15 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     text_rssi.setTextColor(Color.RED)
                 }
             }
-            /*
+
             GattAttributes.mMeterVersion->{
                 val deviceMeter=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
 
-                isMeterpass=(deviceMeter==strMeter)
+                //isMeterpass=(deviceMeter==strMeter)
 
                 text_meter.text=deviceMeter
 
+                /*
                 if (isMeterpass!!){
                     show_meter.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
                     text_meter.setTextColor(Color.parseColor("#050505"))
@@ -1226,9 +1225,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     show_meter.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
                     text_meter.setTextColor(Color.RED)
                 }
+
+                 */
             }
 
-             */
+
             GattAttributes.mReadRecordedData->{
                 val array=intent.getStringArrayListExtra(BluetoothLeService.EXTRA_DATA)
                 if (array!=null){
