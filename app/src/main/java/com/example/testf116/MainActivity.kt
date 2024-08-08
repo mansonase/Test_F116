@@ -11,7 +11,12 @@ import android.bluetooth.le.ScanResult
 import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -32,8 +37,12 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.zxing.BarcodeFormat
-import com.google.zxing.qrcode.encoder.QRCode
+import com.google.zxing.MultiFormatWriter
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import com.onbarcode.barcode.android.AndroidColor
+import com.onbarcode.barcode.android.AndroidFont
+import com.onbarcode.barcode.android.Code128
+import com.onbarcode.barcode.android.IBarcode
 import io.realm.Realm
 import io.realm.Sort
 import kotlinx.android.synthetic.main.activity_main.*
@@ -672,14 +681,13 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         }
 
         if (strAddress.isNotEmpty()) {
+
             dialog.barcode_mac.setImageBitmap(
-                codeAsBitmap(
-                    strAddress,
-                    BarcodeFormat.CODE_128,
-                    900,
-                    200
-                )
+                codeAsBitmap(strAddress, BarcodeFormat.CODE_128, 900, 200)
+                //generateCode128ABarcode(strAddress,900,200)
             )
+
+
             dialog.text_mac.text=strAddress
 
             val address=strAddress.split(":")
@@ -688,26 +696,26 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 nameAndMac+=address[i]
             }
 
+
             dialog.barcode_name_mac.setImageBitmap(
-                codeAsBitmap(
-                    nameAndMac,
-                    BarcodeFormat.CODE_128
-                ,900,
-                    200
-                )
+                codeAsBitmap(nameAndMac, BarcodeFormat.CODE_128,900, 200)
+                //generateCode128ABarcode(nameAndMac,900,200)
             )
+
+
             dialog.text_name_mac.text=nameAndMac
         }
 
         if (deviceName.isNotEmpty()) {
             dialog.barcode_name.setImageBitmap(
-                codeAsBitmap(
-                    deviceName,
-                    BarcodeFormat.CODE_128,
-                    900,
-                    200
-                )
+                codeAsBitmap(deviceName, BarcodeFormat.CODE_128, 900, 200)
+                //generateCode128ABarcode(deviceName,900,200)
             )
+
+
+
+            Log.d("testName","device name is -$deviceName-")
+
             dialog.text_name.text=deviceName
         }
 
@@ -927,6 +935,40 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         val encoder=BarcodeEncoder()
         val bitmap=encoder.encodeBitmap(content,format,desiredWidth,desiredHeight)
 
+        return bitmap
+    }
+    private fun generateCode128ABarcode(data:String,width:Int,height:Int):Bitmap{
+
+        val barcode=Code128()
+        barcode.data=data
+        barcode.isProcessTilde=false
+        barcode.codeSet=Code128.SET_A
+        barcode.uom=IBarcode.UOM_PIXEL
+        barcode.x=1f
+        barcode.y=75f
+
+        barcode.leftMargin=10f
+        barcode.rightMargin=10f
+        barcode.topMargin=10f
+        barcode.bottomMargin=10f
+
+        barcode.resolution=72
+
+        barcode.isShowText=true
+        barcode.textFont= AndroidFont("Arial",Typeface.NORMAL,12)
+        barcode.textMargin=6f
+        barcode.textColor= AndroidColor.black
+
+        barcode.foreColor= AndroidColor.black
+        barcode.backColor=AndroidColor.white
+
+        val bounds=RectF(30f,30f,0f,0f)
+
+
+        val bitmap=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
+        val canvas=Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
+        barcode.drawBarcode(canvas,bounds)
 
         return bitmap
     }
