@@ -33,10 +33,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    packagingOptions{
-        //excludes 'license/README.dom.txt'
-        pickFirst '**'
-    }
 }
 
 dependencies {
