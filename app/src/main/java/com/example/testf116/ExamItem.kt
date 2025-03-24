@@ -49,26 +49,41 @@ open class ExamItem :RealmObject(){
     var current:Float=0f
     get() {return field}
     set(value) {field=value}
+    var currentWithLoad:Float=0f
+        get() {return field}
+        set(value) {field=value}
 
     //voltage
     var voltage:Float=0f
     get() {return field}
     set(value) {field=value}
+    var voltageWithLoad:Float=0f
+        get() {return field}
+        set(value) {field=value}
 
     //watt
     var watt:Float=0f
     get() {return field}
     set(value) {field=value}
+    var wattWithLoad:Float=0f
+        get() {return field}
+        set(value) {field=value}
 
     //power factor
     var powerFactor:Float=0f
     get() {return field}
     set(value) {field=value}
+    var powerFactorWithLoad:Float=0f
+        get() {return field}
+        set(value) {field=value}
 
     //watt_hour
     var wattHour:Float=0f
     get() {return field}
     set(value) {field=value}
+    var wattHourWithLoad:Float=0f
+        get() {return field}
+        set(value) {field=value}
 
     //LED blue flash
     var isLEDBlueFlash:Boolean=false

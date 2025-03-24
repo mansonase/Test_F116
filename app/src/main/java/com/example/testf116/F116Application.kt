@@ -18,8 +18,9 @@ class F116Application:Application() {
         Realm.init(this)
         val mRealmConfiguration=RealmConfiguration.Builder()
             .name("F116DB")
-            .schemaVersion(0)
+            .schemaVersion(1)
             .directory(File(getDiskCacheDir(this)+"/f116_db"))
+            .migration(MigrationHelper())
             .build()
 
         Realm.setDefaultConfiguration(mRealmConfiguration)

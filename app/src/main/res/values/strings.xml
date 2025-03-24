@@ -74,4 +74,25 @@
         <item>RD</item>
     </string-array>
 
+    <string name="device_information">Device Info</string>
+    <string name="test_step">Test Process</string>
+    <string name="choose_process">Please choose test phase</string>
+    <string name="no_load_test">1. No Load Test</string>
+    <string name="with_load_test">2. With Load Test</string>
+    <string name="led_check">3. LED Check</string>
+    <string name="test_data_no_load">Test Data (No-Load)</string>
+    <string name="test_data_with_load">Test Data (With-Load)</string>
+    <string name="test_led">Test LED</string>
+    <string name="test_result">Test Result</string>
+    <string name="reset">Reset</string>
+    <string name="no_load_testing">No-Load Testing…</string>
+    <string name="no_load_test_done">No-Load Test Done</string>
+    <string name="with_load_testing">With-Load Testing…</string>
+    <string name="with_load_test_done">With-Load Test Done</string>
+    <string name="please_check_led_status">Please Check LED status</string>
+    <string name="test_finish">Test Done</string>
+    <string name="no_load_voltage">No-Load Voltage &#177;</string>
+    <string name="with_load_voltage">With-Load Voltage &#177;</string>
+    <string name="with_load_current">With-Load Current &#177;</string>
+    <string name="tolerance_percentage"><u>Tolerance Percentage</u></string>
 </resources>

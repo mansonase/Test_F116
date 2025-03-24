@@ -4,60 +4,152 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattService
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.ServiceConnection
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.*
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
 import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.util.Log
-import android.view.*
-import android.widget.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.text.set
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.zxing.BarcodeFormat
-import com.google.zxing.MultiFormatWriter
 import com.journeyapps.barcodescanner.BarcodeEncoder
-import com.onbarcode.barcode.android.AndroidColor
-import com.onbarcode.barcode.android.AndroidFont
-import com.onbarcode.barcode.android.Code128
-import com.onbarcode.barcode.android.IBarcode
 import io.realm.Realm
 import io.realm.Sort
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.custom_toast.view.*
-import kotlinx.android.synthetic.main.dialog_export.*
-import kotlinx.android.synthetic.main.dialog_header.*
+import kotlinx.android.synthetic.main.activity_main.btn_connection
+import kotlinx.android.synthetic.main.activity_main.btn_no_load_test
+import kotlinx.android.synthetic.main.activity_main.btn_reset
+import kotlinx.android.synthetic.main.activity_main.btn_save
+import kotlinx.android.synthetic.main.activity_main.btn_with_load_test
+import kotlinx.android.synthetic.main.activity_main.fail_led_1
+import kotlinx.android.synthetic.main.activity_main.fail_led_2
+import kotlinx.android.synthetic.main.activity_main.fail_led_3
+import kotlinx.android.synthetic.main.activity_main.fail_led_4
+import kotlinx.android.synthetic.main.activity_main.led_test_group
+import kotlinx.android.synthetic.main.activity_main.lower_cover_main
+import kotlinx.android.synthetic.main.activity_main.pass_led_1
+import kotlinx.android.synthetic.main.activity_main.pass_led_2
+import kotlinx.android.synthetic.main.activity_main.pass_led_3
+import kotlinx.android.synthetic.main.activity_main.pass_led_4
+import kotlinx.android.synthetic.main.activity_main.progressbar
+import kotlinx.android.synthetic.main.activity_main.show_firmware
+import kotlinx.android.synthetic.main.activity_main.show_led_1
+import kotlinx.android.synthetic.main.activity_main.show_led_2
+import kotlinx.android.synthetic.main.activity_main.show_led_3
+import kotlinx.android.synthetic.main.activity_main.show_led_4
+import kotlinx.android.synthetic.main.activity_main.show_no_load_current
+import kotlinx.android.synthetic.main.activity_main.show_no_load_voltage
+import kotlinx.android.synthetic.main.activity_main.show_rssi
+import kotlinx.android.synthetic.main.activity_main.show_tag
+import kotlinx.android.synthetic.main.activity_main.show_with_load_current
+import kotlinx.android.synthetic.main.activity_main.show_with_load_power_factor
+import kotlinx.android.synthetic.main.activity_main.show_with_load_voltage
+import kotlinx.android.synthetic.main.activity_main.show_with_load_watt
+import kotlinx.android.synthetic.main.activity_main.test_no_load_data_card
+import kotlinx.android.synthetic.main.activity_main.test_phase_text
+import kotlinx.android.synthetic.main.activity_main.test_with_load_data_card
+import kotlinx.android.synthetic.main.activity_main.text_firmware
+import kotlinx.android.synthetic.main.activity_main.text_meter
+import kotlinx.android.synthetic.main.activity_main.text_no_load_current
+import kotlinx.android.synthetic.main.activity_main.text_no_load_voltage
+import kotlinx.android.synthetic.main.activity_main.text_result
+import kotlinx.android.synthetic.main.activity_main.text_rssi
+import kotlinx.android.synthetic.main.activity_main.text_tag
+import kotlinx.android.synthetic.main.activity_main.text_with_load_current
+import kotlinx.android.synthetic.main.activity_main.text_with_load_power_factor
+import kotlinx.android.synthetic.main.activity_main.text_with_load_voltage
+import kotlinx.android.synthetic.main.activity_main.text_with_load_watt
+import kotlinx.android.synthetic.main.activity_main.text_with_load_wh
+import kotlinx.android.synthetic.main.activity_main.upper_cover_main
+import kotlinx.android.synthetic.main.custom_toast.view.text_toast
+import kotlinx.android.synthetic.main.dialog_export.export_btn
+import kotlinx.android.synthetic.main.dialog_export.total_device
+import kotlinx.android.synthetic.main.dialog_export.total_tests
 import kotlinx.android.synthetic.main.dialog_header.cancel_button
-import kotlinx.android.synthetic.main.dialog_scan_result.*
-import kotlinx.android.synthetic.main.fragment_barcode.*
+import kotlinx.android.synthetic.main.dialog_header.expandable_section
+import kotlinx.android.synthetic.main.dialog_header.firmware_number
+import kotlinx.android.synthetic.main.dialog_header.header_text
+import kotlinx.android.synthetic.main.dialog_header.load_current
+import kotlinx.android.synthetic.main.dialog_header.load_voltage
+import kotlinx.android.synthetic.main.dialog_header.meter
+import kotlinx.android.synthetic.main.dialog_header.no_load_voltage
+import kotlinx.android.synthetic.main.dialog_header.order_serial_1
+import kotlinx.android.synthetic.main.dialog_header.order_serial_2
+import kotlinx.android.synthetic.main.dialog_header.producing_time
+import kotlinx.android.synthetic.main.dialog_header.rssi_large
+import kotlinx.android.synthetic.main.dialog_header.rssi_small
+import kotlinx.android.synthetic.main.dialog_header.save_button
+import kotlinx.android.synthetic.main.dialog_header.tag_number
+import kotlinx.android.synthetic.main.dialog_header.testing_department
+import kotlinx.android.synthetic.main.dialog_scan_result.recyclerview
+import kotlinx.android.synthetic.main.dialog_scan_result.refreshlayout
+import kotlinx.android.synthetic.main.fragment_barcode.barcode_mac
+import kotlinx.android.synthetic.main.fragment_barcode.barcode_name
+import kotlinx.android.synthetic.main.fragment_barcode.barcode_name_mac
+import kotlinx.android.synthetic.main.fragment_barcode.cancel_show_rssi
+import kotlinx.android.synthetic.main.fragment_barcode.content_rssi
+import kotlinx.android.synthetic.main.fragment_barcode.text_mac
+import kotlinx.android.synthetic.main.fragment_barcode.text_name
+import kotlinx.android.synthetic.main.fragment_barcode.text_name_mac
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Calendar
+import java.util.Locale
+import java.util.UUID
 
 
 class MainActivity : AppCompatActivity(),View.OnClickListener {
@@ -90,6 +182,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private lateinit var strRssiSmall:String
     private lateinit var strRssiLarge:String
     private lateinit var strProducingTime:String
+
+    private var toleranceNoLoadVoltage=0f
+    private var toleranceWithLoadCurrent=0f
+    private var toleranceWithLoadVoltage=0f
+
     private var intTestDepartment=0
     private var powerOnEpoch=0L
     private var powerOffEpoch=0L
@@ -103,10 +200,12 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private var isTagPass:Boolean?=null
     //private var isMeterpass:Boolean?=null
     private var isRssiPass:Boolean?=null
-    private var isCurrentPass:Boolean?=null
-    private var isVoltagePass:Boolean?=null
-    private var isWattPass:Boolean?=null
-    private var isPFPass:Boolean?=null
+    private var isCurrentPassNoLoad:Boolean?=null
+    private var isVoltagePassNoLoad:Boolean?=null
+    private var isCurrentPassWithLoad:Boolean?=null
+    private var isVoltagePassWithLoad:Boolean?=null
+    private var isWattPassWithLoad:Boolean?=null
+    private var isPFPassWithLoad:Boolean?=null
     private var isLED1Pass:Boolean?=null
     private var isLED2Pass:Boolean?=null
     private var isLED3Pass:Boolean?=null
@@ -114,9 +213,13 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private var isResultPass:Boolean?=null
 
     private val lock=Object()
+    private val channel= Channel<Unit>()
     private var reConnectCount=0
     private var isAllowedSaving=false
 
+    private var loadType=0// 0:no-load, 1:with-load
+
+    private var clickCount=0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -197,8 +300,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         when(v?.id){
             R.id.btn_connection->{
                 if (isConnected){
-
-                    //doDeActivePower()
                     mBluetoothLeService?.disconnect()
                 }else{
 
@@ -206,25 +307,29 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 }
                 progressbar.visibility=View.VISIBLE
             }
-            R.id.btn_test->{
-                //progressbar.visibility=View.VISIBLE
-                //resetAfterSetup()
-                doCharacteristic()
-                Log.d("writesu","$reConnectCount, step-5")
-                Log.d("btnTest","test btn")
+            R.id.btn_no_load_test->{
+                updateUIForTestPhase(TestPhase.NO_LOAD)
+                doCharacteristicMeasurement(0)
+            }
+            R.id.btn_with_load_test->{
+                updateUIForTestPhase(TestPhase.WITH_LOAD)
+                doCharacteristicMeasurement(1)
             }
             R.id.btn_save -> {
                 Log.d("btnTest", "save btn")
 
                 if (isAllowedSaving) {
                     doSave()
-                    resetAfterSetup()
+                    resetAfterSetup(true)
                     savingToast()
                     checkSerial()
                     isAllowedSaving=false
                 } else {
                     Toast.makeText(this,getString(R.string.unable_save),Toast.LENGTH_SHORT).show()
                 }
+            }
+            R.id.btn_reset->{
+                updateUIForTestPhase(TestPhase.RESET)
             }
             R.id.fail_led_1->{
                 isLED1Pass=false
@@ -335,7 +440,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 }
             }else{
                 if (!adapter!!.isEnabled){
-                    adapter!!.enable()
+                    val permissionCheck=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                        ActivityCompat.checkSelfPermission(this,Manifest.permission.BLUETOOTH_CONNECT)
+                    }else{
+                        ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
+                    }
+                    if (permissionCheck==PackageManager.PERMISSION_GRANTED) {
+                        adapter!!.enable()
+                    }
                 }
             }
         }
@@ -407,8 +519,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         sharedPreferences=getSharedPreferences("f116_db", MODE_PRIVATE)
 
         btn_connection.setOnClickListener(this)
-        btn_test.setOnClickListener(this)
+        //btn_test.setOnClickListener(this)
+        btn_no_load_test.setOnClickListener(this)
+        btn_with_load_test.setOnClickListener(this)
         btn_save.setOnClickListener(this)
+        btn_reset.setOnClickListener(this)
 
         fail_led_1.setOnClickListener(this)
         fail_led_2.setOnClickListener(this)
@@ -419,6 +534,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         pass_led_3.setOnClickListener(this)
         pass_led_4.setOnClickListener(this)
 
+        /*
         if (isConnected){
             lower_cover_main.visibility=View.GONE
             setButtonClickable(true)
@@ -427,6 +543,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             setButtonClickable(false)
         }
 
+         */
+
+        /*
         if (strAddress.isEmpty()){
             upper_cover_main.visibility=View.VISIBLE
             btn_connection.isClickable=false
@@ -434,6 +553,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             upper_cover_main.visibility=View.GONE
             btn_connection.isClickable=true
         }
+
+         */
     }
 
     private fun initStandard(){
@@ -447,6 +568,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         strRssiLarge=sharedPreferences.getString(GattAttributes.RSSI_LARGE,"0").toString()
         strProducingTime=sharedPreferences.getString(GattAttributes.PRODUCING_TIME,"0").toString()
         intTestDepartment=sharedPreferences.getInt(GattAttributes.TEST_DEP,-1)
+
+        toleranceNoLoadVoltage=sharedPreferences.getFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_NO_LOAD_VOLTAGE)
+        toleranceWithLoadCurrent=sharedPreferences.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_CURRENT)
+        toleranceWithLoadVoltage=sharedPreferences.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_VOLTAGE)
+        Log.d("testTolerance","no-load V $toleranceNoLoadVoltage, with-load C $toleranceWithLoadCurrent, with-load V $toleranceWithLoadVoltage")
     }
 
     private fun menuIconWithText(drawable: Drawable, title: String): CharSequence {
@@ -565,6 +691,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
                 return@setOnClickListener
             }
+            toleranceNoLoadVoltage=dialog.no_load_voltage.selectedItem.toString().toFloat()
+            toleranceWithLoadCurrent=dialog.load_current.selectedItem.toString().toFloat()
+            toleranceWithLoadVoltage=dialog.load_voltage.selectedItem.toString().toFloat()
 
 
             sharedPreferences.edit()
@@ -579,9 +708,12 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     .putString(GattAttributes.RSSI_LARGE,strRssiLarge)
                     .putString(GattAttributes.PRODUCING_TIME,strProducingTime)
                     .putInt(GattAttributes.TEST_DEP,intTestDepartment)
+                    .putFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE,toleranceNoLoadVoltage)
+                    .putFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT,toleranceWithLoadCurrent)
+                    .putFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE,toleranceWithLoadVoltage)
                     .apply()
             dialog.dismiss()
-            resetAfterSetup()
+            resetAfterSetup(false)
             initStandard()
         }
 
@@ -603,6 +735,47 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             datePickerDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
 
         }
+        dialog.header_text.setOnClickListener {
+            clickCount++
+            if (clickCount==7){
+                dialog.expandable_section.visibility=View.VISIBLE
+                clickCount=0
+            }
+        }
+        // Set up no-load voltage spinner
+        val voltageValues= arrayOf("1.0","1.5","2.0","2.5","3.0")
+        val noLoadVoltageAdapter=ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            voltageValues
+        )
+        dialog.no_load_voltage.adapter=noLoadVoltageAdapter
+        val strNoLoadVoltage=toleranceNoLoadVoltage.toString()
+        val noLoadVoltagePos=voltageValues.indexOf(strNoLoadVoltage)
+        dialog.no_load_voltage.setSelection(noLoadVoltagePos)
+
+        // Set up current spinner
+        val currentValues = arrayOf("1.0", "2.0", "3.0")
+        val currentAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            currentValues
+        )
+        dialog.load_current.adapter = currentAdapter
+        val strWithLoadCurrent=toleranceWithLoadCurrent.toString()
+        val withLoadCurrentPos=currentValues.indexOf(strWithLoadCurrent)
+        dialog.load_current.setSelection(withLoadCurrentPos)
+
+        // Set up voltage spinner
+        val voltageAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            voltageValues
+        )
+        dialog.load_voltage.adapter = voltageAdapter
+        val strWithLoadVoltage=toleranceWithLoadVoltage.toString()
+        val withLoadVoltagePos=voltageValues.indexOf(strWithLoadVoltage)
+        dialog.load_voltage.setSelection(withLoadVoltagePos)
 
 
         dialog.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
@@ -684,7 +857,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
             dialog.barcode_mac.setImageBitmap(
                 codeAsBitmap(strAddress, BarcodeFormat.CODE_128, 900, 200)
-                //generateCode128ABarcode(strAddress,900,200)
             )
 
 
@@ -699,7 +871,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
             dialog.barcode_name_mac.setImageBitmap(
                 codeAsBitmap(nameAndMac, BarcodeFormat.CODE_128,900, 200)
-                //generateCode128ABarcode(nameAndMac,900,200)
             )
 
 
@@ -709,7 +880,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         if (deviceName.isNotEmpty()) {
             dialog.barcode_name.setImageBitmap(
                 codeAsBitmap(deviceName, BarcodeFormat.CODE_128, 900, 200)
-                //generateCode128ABarcode(deviceName,900,200)
             )
 
 
@@ -778,7 +948,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 scanLeDevice(true)
             }
         }else{
-            adapter?.enable()
+            val permissionCheck=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                ActivityCompat.checkSelfPermission(this,Manifest.permission.BLUETOOTH_CONNECT)
+            }else{
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
+            }
+            if (permissionCheck==PackageManager.PERMISSION_GRANTED) {
+                adapter?.enable()
+            }
         }
     }
 
@@ -807,15 +984,36 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
             Handler(Looper.getMainLooper()).postDelayed({
                 isScanning=false
-                scanner?.stopScan(mLeScanCallback)
+                val permissionCheck=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                    ActivityCompat.checkSelfPermission(this,Manifest.permission.BLUETOOTH_CONNECT)
+                }else{
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
+                }
+                if (permissionCheck==PackageManager.PERMISSION_GRANTED) {
+                    scanner?.stopScan(mLeScanCallback)
+                }
             },5000)
 
             isScanning=true
-            scanner?.startScan(mLeScanCallback)
+            val permissionCheck=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                ActivityCompat.checkSelfPermission(this,Manifest.permission.BLUETOOTH_CONNECT)
+            }else{
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
+            }
+            if (permissionCheck==PackageManager.PERMISSION_GRANTED) {
+                scanner?.startScan(mLeScanCallback)
+            }
         }else{
 
             isScanning=false
-            scanner?.stopScan(mLeScanCallback)
+            val permissionCheck=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                ActivityCompat.checkSelfPermission(this,Manifest.permission.BLUETOOTH_CONNECT)
+            }else{
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
+            }
+            if (permissionCheck==PackageManager.PERMISSION_GRANTED) {
+                scanner?.stopScan(mLeScanCallback)
+            }
         }
     }
 
@@ -828,14 +1026,31 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
             if (result.device==null)return
 
-            if (result.device.name==null)return
+            val permissionCheck1=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                ActivityCompat.checkSelfPermission(this@MainActivity,Manifest.permission.BLUETOOTH_CONNECT)
+            }else{
+                ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_ADMIN)
+            }
+            if (permissionCheck1==PackageManager.PERMISSION_GRANTED) {
+                if (result.device.name == null) return
+            }
 
             //if (result.device.name.substring(0,6).trim()!="eCloud"&&result.device.name.substring(0,4).trim()!="F100")return
             if (!result.device.name.contains("eCloud"))return
 
             //scanLeDevice(false)
 
-            Log.d("testF1166","address ${result.device.address}, name: ${result.device.name}, rssi ${result.rssi}")
+            val permissionCheck2=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                ActivityCompat.checkSelfPermission(this@MainActivity,Manifest.permission.BLUETOOTH_CONNECT)
+            }else{
+                ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_ADMIN)
+            }
+            if (permissionCheck2==PackageManager.PERMISSION_GRANTED) {
+                Log.d(
+                    "testF1166",
+                    "address ${result.device.address}, name: ${result.device.name}, rssi ${result.rssi}"
+                )
+            }
 
             mLeDeviceListAdapter.addDevice(result.device,result.rssi)
             //mLeDeviceListAdapter.notifyDataSetChanged()
@@ -892,18 +1107,15 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 isConnected=false
                 btn_connection.setText(R.string.connected)
                 btn_connection.setBackgroundColor(resources.getColor(android.R.color.holo_green_light))
-                lower_cover_main.visibility=View.VISIBLE
-                setButtonClickable(false)
-                resetAfterSetup()
-                progressbar.visibility=View.GONE
+                updateUIForTestPhase(TestPhase.DISCONNECT)
             }else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED==action){
                 isConnected=true
                 btn_connection.setText(R.string.disconnected)
                 btn_connection.setBackgroundColor(resources.getColor(android.R.color.holo_red_light))
-                lower_cover_main.visibility=View.GONE
-                setButtonClickable(true)
+                //upper_cover_main.visibility=View.GONE
                 checkSerial()
-                progressbar.visibility=View.GONE
+                //progressbar.visibility=View.GONE
+                doCharacteristicDeviceInfo()
                 isAllowedSaving=false
             }else if (BluetoothLeService.ACTION_DATA_AVAILABLE==action){
                 doTest(p1)
@@ -937,61 +1149,12 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         return bitmap
     }
-    private fun generateCode128ABarcode(data:String,width:Int,height:Int):Bitmap{
-
-        val barcode=Code128()
-        barcode.data=data
-        barcode.isProcessTilde=false
-        barcode.codeSet=Code128.SET_A
-        barcode.uom=IBarcode.UOM_PIXEL
-        barcode.x=1f
-        barcode.y=75f
-
-        barcode.leftMargin=10f
-        barcode.rightMargin=10f
-        barcode.topMargin=10f
-        barcode.bottomMargin=10f
-
-        barcode.resolution=72
-
-        barcode.isShowText=true
-        barcode.textFont= AndroidFont("Arial",Typeface.NORMAL,12)
-        barcode.textMargin=6f
-        barcode.textColor= AndroidColor.black
-
-        barcode.foreColor= AndroidColor.black
-        barcode.backColor=AndroidColor.white
-
-        val bounds=RectF(30f,30f,0f,0f)
-
-
-        val bitmap=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
-        val canvas=Canvas(bitmap)
-        canvas.drawColor(Color.WHITE)
-        barcode.drawBarcode(canvas,bounds)
-
-        return bitmap
-    }
 
     private fun calendarToText(cal:Calendar):String{
 
         val format=SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
 
         return format.format(cal.time)
-    }
-
-    private fun doDeActivePower(){
-        Thread{
-
-            runOnUiThread {
-                val byteArray= byteArrayOf((0x00).toByte())
-                characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_CONTROL) as BluetoothGattService)
-                        .getCharacteristic(UUID.fromString(GattAttributes.activate_power))
-                if (characteristic!=null){
-                    mBluetoothLeService?.writeCharacteristic(characteristic!!,byteArray)
-                }
-            }
-        }.start()
     }
 
     private fun doRelay(turningOn:Boolean){
@@ -1197,297 +1360,300 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         when(intent.getStringExtra(BluetoothLeService.CHARACTERISTIC)){
 
             GattAttributes.mFirmwareRevision->{
-                val deviceFirmwareVersion=if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA)==null){
-                    "0"
-                }else{
-                    intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
-                }
-
-                isFirmwarePass= (deviceFirmwareVersion == strFirmwareVersion)
-
-                text_firmware.text=deviceFirmwareVersion
-
-                if (isFirmwarePass!!){
-                    show_firmware.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_firmware.setTextColor(Color.parseColor("#050505"))
-                }else{
-                    show_firmware.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                    text_firmware.setTextColor(Color.RED)
-                }
+                setFirmwareResult(intent)
             }
             GattAttributes.mNfcTagId->{
-                val deviceNfcTag=if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA)==null){
-                    "0000"
-                }else{
-                    intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
-                }
-                Log.d("tagtag","$deviceNfcTag, $strTagNumber")
-                isTagPass=deviceNfcTag==strTagNumber
-
-                text_tag.text=deviceNfcTag
-
-                if (isTagPass!!){
-                    show_tag.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_tag.setTextColor(Color.parseColor("#050505"))
-                }else{
-                    show_tag.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                    text_tag.setTextColor(Color.RED)
-                }
+                setTagResult(intent)
             }
             GattAttributes.mRssi->{
-                val deviceRssi=intent.getIntExtra(BluetoothLeService.EXTRA_DATA,0)
-                val rssiSmall=(0-strRssiSmall.toInt())
-                val rssiLarge=(0-strRssiLarge.toInt())
-
-                isRssiPass= (deviceRssi in rssiSmall .. rssiLarge)
-
-                text_rssi.text=deviceRssi.toString()
-
-                if (isRssiPass!!){
-                    show_rssi.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_rssi.setTextColor(Color.parseColor("#050505"))
-                }else{
-                    show_rssi.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                    text_rssi.setTextColor(Color.RED)
-                }
+                setRssiResult(intent)
             }
-
             GattAttributes.mMeterVersion->{
-                val deviceMeter=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
-
-                //isMeterpass=(deviceMeter==strMeter)
-
-                text_meter.text=deviceMeter
-
-                /*
-                if (isMeterpass!!){
-                    show_meter.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_meter.setTextColor(Color.parseColor("#050505"))
-                }else{
-                    show_meter.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                    text_meter.setTextColor(Color.RED)
-                }
-
-                 */
+                setMeterResult(intent)
             }
-
 
             GattAttributes.mReadRecordedData->{
-                val array=intent.getStringArrayListExtra(BluetoothLeService.EXTRA_DATA)
-                if (array!=null){
-                    val deviceCurrent=array[2]
-                    val deviceVoltage=array[3]
-                    val deviceWatt=array[4]
-                    val devicePowerFactor=array[5]
-                    val deviceConsumption=array[6]
-
-                    isCurrentPass=(deviceCurrent.toFloat() in GattAttributes.CURRENT_LOW .. GattAttributes.CURRENT_HIGH)
-
-                    text_current.text=deviceCurrent
-
-                    if (isCurrentPass!!){
-                        show_current.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                        text_current.setTextColor(Color.parseColor("#050505"))
-                    }else{
-                        show_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                        text_current.setTextColor(Color.RED)
-                    }
-
-                    isVoltagePass=(deviceVoltage.toFloat() in GattAttributes.VOLTAGE_LOW .. GattAttributes.VOLTAGE_HIGH)
-
-                    text_voltage.text=deviceVoltage
-
-                    if (isVoltagePass!!){
-                        show_voltage.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                        text_voltage.setTextColor(Color.parseColor("#050505"))
-                    }else{
-                        show_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                        text_voltage.setTextColor(Color.RED)
-                    }
-
-                    isWattPass=(deviceWatt.toFloat() in GattAttributes.WATT_LOW .. GattAttributes.WATT_HIGH)
-
-                    text_watt.text=deviceWatt
-
-                    if (isWattPass!!){
-                        show_watt.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                        text_watt.setTextColor(Color.parseColor("#050505"))
-                    }else{
-                        show_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                        text_watt.setTextColor(Color.RED)
-                    }
-
-                    isPFPass=(devicePowerFactor.toFloat() in GattAttributes.PF_LOW .. GattAttributes.PF_HIGH)
-
-                    text_power_factor.text=devicePowerFactor
-
-                    if (isPFPass!!){
-                        show_power_factor.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                        text_power_factor.setTextColor(Color.parseColor("#050505"))
-                    }else{
-                        show_power_factor.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                        text_power_factor.setTextColor(Color.RED)
-                    }
-                    text_wh.text=deviceConsumption
-                }
+                setRecordResult(intent)
             }
             GattAttributes.mCurrent->{
-                val strCurrent= intent.getStringExtra(BluetoothLeService.EXTRA_DATA) ?: return
-
-                text_current.text=strCurrent
-                isCurrentPass=(strCurrent.toFloat() in GattAttributes.CURRENT_LOW .. GattAttributes.CURRENT_HIGH)
-                if (isCurrentPass!!){
-                    show_current.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_current.setTextColor(Color.parseColor("#050505"))
-                }else{
-                    show_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                    text_current.setTextColor(Color.RED)
-                }
+                setCurrentResult(intent)
             }
             GattAttributes.mVoltage->{
-                val strVoltage=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
-
-                text_voltage.text=strVoltage
-                isVoltagePass=(strVoltage.toFloat() in GattAttributes.VOLTAGE_LOW .. GattAttributes.VOLTAGE_HIGH)
-                if (isVoltagePass!!){
-                    show_voltage.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_voltage.setTextColor(Color.parseColor("#050505"))
-                }else{
-                    show_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                    text_voltage.setTextColor(Color.RED)
-                }
+                setVoltageResult(intent)
             }
             GattAttributes.mWatt->{
-                val strWatt=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
-
-                text_watt.text=strWatt
-                isWattPass=(strWatt.toFloat() in GattAttributes.WATT_LOW .. GattAttributes.WATT_HIGH)
-                if (isWattPass!!){
-                    show_watt.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_watt.setTextColor(Color.parseColor("#050505"))
-                }else{
-                    show_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-                    text_watt.setTextColor(Color.RED)
-                }
+                setWattResult(intent)
             }
             GattAttributes.mPowerFactor->{
-                val strPowerFactor=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
-
-                text_power_factor.text=strPowerFactor
-                isPFPass=(strPowerFactor.toFloat() in GattAttributes.PF_LOW .. GattAttributes.PF_HIGH)
-                if (isPFPass!!){
-                    show_power_factor.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_power_factor.setTextColor(Color.parseColor("#050505"))
-                }else{
-                    show_power_factor.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
-                    text_power_factor.setTextColor(Color.RED)
-                }
+                setPowerFactorResult(intent)
             }
             GattAttributes.mLoad->{
-                text_wh.text=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
+                setLoadResult(intent)
             }
             GattAttributes.mPowerOn->{
-                synchronized(lock) {
-                    Log.d("lock","step get ON")
+                CoroutineScope(Dispatchers.IO).launch {
                     isPowerActivated=true
                     calendar=Calendar.getInstance()
                     powerOnEpoch=calendar.timeInMillis
-                    lock.notify()
+                    channel.send(Unit)
                 }
             }
             GattAttributes.mPowerOff->{
-                synchronized(lock) {
-                    Log.d("lock","step get OFF")
+                CoroutineScope(Dispatchers.IO).launch {
                     isPowerActivated=false
                     calendar=Calendar.getInstance()
                     powerOffEpoch=calendar.timeInMillis
-                    //mBluetoothLeService?.disconnect()
-                    lock.notify()
+                    channel.send(Unit)
                 }
             }
         }
         //checkAllPass()
     }
-    private fun resetAfterSetup(){
 
-        show_firmware.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-        show_tag.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-        show_rssi.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-        show_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-        show_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-        show_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-        show_power_factor.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
-        show_meter.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+    private fun doCharacteristicDeviceInfo(){
+        CoroutineScope(Dispatchers.Main).launch {
+            //progress
+            progressbar.visibility = View.VISIBLE
+            //讀firmware version
+            characteristic =
+                (mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_INFORMATION) as BluetoothGattService)
+                    .getCharacteristic(UUID.fromString(GattAttributes.firmware_revision_string))
+            if (characteristic != null) {
+                mBluetoothLeService?.readCharacteristic(characteristic!!)
+            }
+            //等500ms
+            withContext(Dispatchers.IO){
+                delay(500)
+            }
+            //讀tag No.
+            characteristic =
+                (mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_CONTROL) as BluetoothGattService)
+                    .getCharacteristic(UUID.fromString(GattAttributes.nfc_tag_id))
+            if (characteristic != null) {
+                mBluetoothLeService?.readCharacteristic(characteristic!!)
+            }
+            //等500ms
+            withContext(Dispatchers.IO){
+                delay(500)
+            }
+            //讀Rssi
+            mBluetoothLeService?.readRemoteRssii()
+            //等500ms
+            withContext(Dispatchers.IO){
+                delay(500)
+            }
+            //讀meter
+            characteristic =
+                (mBluetoothLeService?.getSupportedGattService(GattAttributes.EXTRA_CONTROL) as BluetoothGattService)
+                    .getCharacteristic(UUID.fromString(GattAttributes.meter_parameter))
+            if (characteristic != null) {
+                mBluetoothLeService?.readCharacteristic(characteristic!!)
+            }
+        }
+    }
+    private fun doCharacteristicMeasurement(testType:Int){
+        loadType=testType
+
+        isPowerActivated=false
+        progressbar.visibility=View.VISIBLE
+
+        CoroutineScope(Dispatchers.Main).launch {
+            //啟動relay3次
+            while (!isPowerActivated) {
+                if (reConnectCount==3){
+                    reConnectCount=0
+                    progressbar.visibility=View.GONE
+                    return@launch
+                }
+                doRelay(true)
+
+                channel.receive()
+
+                characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.DEVICE_CONTROL)as BluetoothGattService)
+                    .getCharacteristic(UUID.fromString(GattAttributes.activate_power))
+                if (characteristic!=null){
+                    mBluetoothLeService?.readCharacteristic(characteristic!!)
+                }
+
+                channel.receive()
+            }
+            characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT)as BluetoothGattService)
+                .getCharacteristic(UUID.fromString(GattAttributes.current))
+            if (characteristic!=null){
+                mBluetoothLeService?.setCharacteristicNotification(characteristic!!,true)
+            }
+            withContext(Dispatchers.IO){
+                delay(500)
+            }
+            characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT)as BluetoothGattService)
+                .getCharacteristic(UUID.fromString(GattAttributes.voltage))
+            if (characteristic!=null){
+                mBluetoothLeService?.setCharacteristicNotification(characteristic!!,true)
+            }
+            if (loadType==1) {
+                withContext(Dispatchers.IO) {
+                    delay(500)
+                }
+                characteristic =
+                    (mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT) as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.watt))
+                if (characteristic != null) {
+                    mBluetoothLeService?.setCharacteristicNotification(characteristic!!, true)
+                }
+                withContext(Dispatchers.IO) {
+                    delay(500)
+                }
+                characteristic =
+                    (mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT) as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.power_factor))
+                if (characteristic != null) {
+                    mBluetoothLeService?.setCharacteristicNotification(characteristic!!, true)
+                }
+                withContext(Dispatchers.IO) {
+                    delay(500)
+                }
+                characteristic =
+                    (mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT) as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.load))
+                if (characteristic != null) {
+                    mBluetoothLeService?.setCharacteristicNotification(characteristic!!, true)
+                }
+            }
+            withContext(Dispatchers.IO){
+                delay(4000)
+            }
+            characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT)as BluetoothGattService)
+                .getCharacteristic(UUID.fromString(GattAttributes.current))
+            if (characteristic!=null){
+                mBluetoothLeService?.disableCharacteristicNotification(characteristic!!)
+            }
+            withContext(Dispatchers.IO){
+                delay(200)
+            }
+            characteristic=(mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT)as BluetoothGattService)
+                .getCharacteristic(UUID.fromString(GattAttributes.voltage))
+            if (characteristic!=null){
+                mBluetoothLeService?.disableCharacteristicNotification(characteristic!!)
+            }
+            withContext(Dispatchers.IO){
+                delay(200)
+            }
+            if (loadType==1) {
+                characteristic =
+                    (mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT) as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.power_factor))
+                if (characteristic != null) {
+                    mBluetoothLeService?.disableCharacteristicNotification(characteristic!!)
+                }
+                withContext(Dispatchers.IO) {
+                    delay(200)
+                }
+                characteristic =
+                    (mBluetoothLeService?.getSupportedGattService(GattAttributes.POWER_MEASUREMENT) as BluetoothGattService)
+                        .getCharacteristic(UUID.fromString(GattAttributes.load))
+                if (characteristic != null) {
+                    mBluetoothLeService?.disableCharacteristicNotification(characteristic!!)
+                }
+                withContext(Dispatchers.IO) {
+                    delay(200)
+                }
+            }
+            doRelay(false)
+            channel.receive()
+
+            calendar=Calendar.getInstance()
+            aa15Epoch=calendar.timeInMillis
+            checkAllPass()
+            progressbar.visibility=View.GONE
+
+            if (loadType==0){
+                updateUIForTestPhase(TestPhase.NO_LOAD_DONE)
+            }else if (loadType==1){
+                updateUIForTestPhase(TestPhase.WITH_LOAD_DONE)
+            }
+        }
+    }
+    private fun resetAfterSetup(isSoftReset:Boolean){
+
+        if (!isSoftReset) {
+            show_firmware.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+            show_tag.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+            show_rssi.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        }
+
+        show_no_load_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_no_load_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+
+        show_with_load_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_with_load_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_with_load_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+        show_with_load_power_factor.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+
         show_led_1.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
         show_led_2.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
         show_led_3.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
         show_led_4.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
 
-        text_firmware.setText(R.string.na)
-        text_firmware.setTextColor(Color.parseColor("#050505"))
-        text_tag.setText(R.string.na)
-        text_tag.setTextColor(Color.parseColor("#050505"))
-        text_rssi.setText(R.string.na)
-        text_rssi.setTextColor(Color.parseColor("#050505"))
-        text_current.setText(R.string.na)
-        text_current.setTextColor(Color.parseColor("#050505"))
-        text_voltage.setText(R.string.na)
-        text_voltage.setTextColor(Color.parseColor("#050505"))
-        text_watt.setText(R.string.na)
-        text_watt.setTextColor(Color.parseColor("#050505"))
-        text_power_factor.setText(R.string.na)
-        text_power_factor.setTextColor(Color.parseColor("#050505"))
+        if (!isSoftReset) {
+            text_firmware.setText(R.string.na)
+            text_firmware.setTextColor(Color.parseColor("#050505"))
+            text_tag.setText(R.string.na)
+            text_tag.setTextColor(Color.parseColor("#050505"))
+            text_rssi.setText(R.string.na)
+            text_rssi.setTextColor(Color.parseColor("#050505"))
+            text_meter.setText(R.string.na)
+            text_meter.setTextColor(Color.parseColor("#050505"))
+        }
+
+        text_no_load_current.setText(R.string.na)
+        text_no_load_current.setTextColor(Color.parseColor("#050505"))
+        text_no_load_voltage.setText(R.string.na)
+        text_no_load_voltage.setTextColor(Color.parseColor("#050505"))
+
+        text_with_load_current.setText(R.string.na)
+        text_with_load_current.setTextColor(Color.parseColor("#050505"))
+        text_with_load_voltage.setText(R.string.na)
+        text_with_load_voltage.setTextColor(Color.parseColor("#050505"))
+        text_with_load_watt.setText(R.string.na)
+        text_with_load_watt.setTextColor(Color.parseColor("#050505"))
+        text_with_load_power_factor.setText(R.string.na)
+        text_with_load_power_factor.setTextColor(Color.parseColor("#050505"))
+        text_with_load_wh.setText(R.string.na)
+        text_with_load_wh.setTextColor(Color.parseColor("#050505"))
 
         text_result.setText(R.string.na)
         text_result.setTextColor(Color.parseColor("#050505"))
 
-        text_wh.setText(R.string.na)
-        text_wh.setTextColor(Color.parseColor("#050505"))
-        text_meter.setText(R.string.na)
-        text_meter.setTextColor(Color.parseColor("#050505"))
-
         isFirmwarePass=null
         isTagPass=null
         isRssiPass=null
-        isCurrentPass=null
-        isVoltagePass=null
-        isWattPass=null
-        isPFPass=null
-        //isMeterpass=null
+
+        isCurrentPassNoLoad=null
+        isVoltagePassNoLoad=null
 
         isLED1Pass=null
         isLED2Pass=null
         isLED3Pass=null
         isLED4Pass=null
 
-    }
-    private fun setButtonClickable(clickable:Boolean){
-        fail_led_1.isClickable=clickable
-        fail_led_2.isClickable=clickable
-        fail_led_3.isClickable=clickable
-        fail_led_4.isClickable=clickable
-        pass_led_1.isClickable=clickable
-        pass_led_2.isClickable=clickable
-        pass_led_3.isClickable=clickable
-        pass_led_4.isClickable=clickable
-        btn_test.isClickable=clickable
-        btn_save.isClickable=clickable
+        isAllowedSaving=false
     }
     private fun checkAllPass(){
         //6/15去掉 isMeterpass
         if (isLED1Pass!=null&&isLED2Pass!=null&&isLED3Pass!=null&&isLED4Pass!=null&&
-            isFirmwarePass!=null&&isTagPass!=null&&isRssiPass!=null&&isCurrentPass!=null&&isVoltagePass!=null&&isWattPass!=null&&isPFPass!=null){
+            isFirmwarePass!=null&&isTagPass!=null&&isRssiPass!=null&&isCurrentPassNoLoad!=null&&isVoltagePassNoLoad!=null){
 
+            updateUIForTestPhase(TestPhase.COMPLETED)
             isAllowedSaving=true
 
             //6/15去掉 isMeterpass
-            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&isFirmwarePass!!&&isTagPass!!&&isRssiPass!!&&isCurrentPass!!&&isVoltagePass!!&&isWattPass!!&&isPFPass!!){
+            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&isFirmwarePass!!&&isTagPass!!&&isRssiPass!!&&isCurrentPassNoLoad!!&&isVoltagePassNoLoad!!){
 
                 isResultPass=true
                 text_result.setTextColor(Color.GREEN)
                 text_result.setText(R.string.pass)
                 doSave()
-                resetAfterSetup()
+                resetAfterSetup(true)
                 savingPassToast()
 
                 mBluetoothLeService?.disconnect()
@@ -1520,11 +1686,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         item.tagNumber=text_tag.text.toString()
         item.rssi=rssi
 
-        item.current=text_current.text.toString().toFloat()
-        item.voltage=text_voltage.text.toString().toFloat()
-        item.watt=text_watt.text.toString().toFloat()
-        item.powerFactor=text_power_factor.text.toString().toFloat()
-        item.wattHour=text_wh.text.toString().toFloat()
+        item.current=text_no_load_current.text.toString().toFloat()
+        item.voltage=text_no_load_voltage.text.toString().toFloat()
+
+        item.currentWithLoad=text_with_load_current.text.toString().toFloat()
+        item.voltageWithLoad=text_with_load_voltage.text.toString().toFloat()
+        item.wattWithLoad=text_with_load_watt.text.toString().toFloat()
+        item.powerFactorWithLoad=text_with_load_power_factor.text.toString().toFloat()
+        item.wattHourWithLoad=text_with_load_wh.text.toString().toFloat()
 
         item.isLEDBlueFlash=isLED1Pass?:false
         item.isLEDBlueOn=isLED2Pass?:false
@@ -1665,17 +1834,34 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             val format=SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
             val fileName="[$strOrderSerialOne-$strOrderSerialTwo].csv"
 
+
             val title= arrayOf(
                     "Serial Number",
                     "Firmware:$strFirmwareVersion",
                     "MAC address",
                     "TAG:$strTagNumber",
                     "BLE Rssi:-$strRssiSmall~-$strRssiLarge",
-                    "Current:${GattAttributes.CURRENT_LOW}~${GattAttributes.CURRENT_HIGH}",
-                    "Voltage:${GattAttributes.VOLTAGE_LOW}~${GattAttributes.VOLTAGE_HIGH}",
-                    "Watt:${GattAttributes.WATT_LOW}~${GattAttributes.WATT_HIGH}",
-                    "PF:${GattAttributes.PF_LOW}~${GattAttributes.PF_HIGH}",
-                    "Watt/Hour",
+                    "Current No-Load:<=${GattAttributes.MAX_NO_LOAD_CURRENT}A",
+                    "Voltage No-Load:${
+                        calculatePercentage(GattAttributes.TARGET_VOLTAGE, toleranceNoLoadVoltage, false)
+                    }~${
+                        calculatePercentage(GattAttributes.TARGET_VOLTAGE, toleranceNoLoadVoltage, true)}",
+
+                    "Current With-Load:${
+                        calculatePercentage(GattAttributes.TARGET_CURRENT,toleranceWithLoadCurrent,false)
+                    }~${
+                        calculatePercentage(GattAttributes.TARGET_CURRENT,toleranceWithLoadCurrent,true)}",
+                    "Voltage With-Load:${
+                        calculatePercentage(GattAttributes.TARGET_VOLTAGE,toleranceWithLoadVoltage,false)
+                    }~${
+                        calculatePercentage(GattAttributes.TARGET_VOLTAGE,toleranceWithLoadVoltage,true)}",
+                    "Watt With-Load:${
+                        calculatePercentage(GattAttributes.TARGET_VOLTAGE*GattAttributes.TARGET_CURRENT,toleranceWithLoadVoltage+toleranceWithLoadCurrent,false)
+                    }~${
+                        calculatePercentage(GattAttributes.TARGET_VOLTAGE*GattAttributes.TARGET_CURRENT,toleranceWithLoadVoltage+toleranceWithLoadCurrent,true)}",
+                    "PF With-Load:${GattAttributes.PF_LOW}~${GattAttributes.PF_HIGH}",
+                    "Watt/Hour With-Load",
+
                     "LED1:Blue Flash",
                     "LED2:Blue",
                     "LED3:Green Flash",
@@ -1715,16 +1901,23 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     val macAddress=mItem.macAddress
                     val tag=mItem.tagNumber
                     val rssi=mItem.rssi.toString()
-                    val current=mItem.current.toString()
-                    val voltage=mItem.voltage.toString()
-                    val watt=mItem.watt.toString()
-                    val pf=mItem.powerFactor.toString()
-                    val wh=mItem.wattHour.toString()
+
+                    val currentNoLoad=mItem.current.toString()
+                    val voltageNoLoad=mItem.voltage.toString()
+
+                    val currentWithLoad=mItem.currentWithLoad.toString()
+                    val voltageWithLoad=mItem.voltageWithLoad.toString()
+                    val wattWithLoad=mItem.wattWithLoad.toString()
+                    val pfWithLoad=mItem.powerFactorWithLoad.toString()
+                    val whWithLoad=mItem.wattHourWithLoad.toString()
+
                     val led1=booleanToString(mItem.isLEDBlueFlash)
                     val led2=booleanToString(mItem.isLEDBlueOn)
                     val led3=booleanToString(mItem.isLEDGreenOn)
                     val led4=booleanToString(mItem.isLEDRedOn)
+
                     val meter=mItem.meter
+
                     val finalResult=booleanToString(mItem.result)
                     calendar.timeInMillis=mItem.aa24Timestamp
                     val timestamp=format.format(calendar.time)
@@ -1734,11 +1927,13 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                             .append("$macAddress,")
                             .append("$tag,")
                             .append("$rssi,")
-                            .append("$current,")
-                            .append("$voltage,")
-                            .append("$watt,")
-                            .append("$pf,")
-                            .append("$wh,")
+                            .append("$currentNoLoad,")
+                            .append("$voltageNoLoad,")
+                            .append("$currentWithLoad,")
+                            .append("$voltageWithLoad,")
+                            .append("$wattWithLoad,")
+                            .append("$pfWithLoad,")
+                            .append("$whWithLoad,")
                             .append("$led1,")
                             .append("$led2,")
                             .append("$led3,")
@@ -1809,6 +2004,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         }
 
         fun addDevice(device:BluetoothDevice,rssi:Int){
+            val permissionCheck=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                ActivityCompat.checkSelfPermission(this@MainActivity,Manifest.permission.BLUETOOTH_CONNECT)
+            }else{
+                ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_ADMIN)
+            }
+            if (permissionCheck!=PackageManager.PERMISSION_GRANTED) {
+                return
+            }
             if (device.name==null)return
 
             //(device.name.substring(0,6).trim()=="eCloud")||(device.name.substring(0,4).trim()=="F100")
@@ -1835,7 +2038,14 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             Log.d("testF1166","....$position")
-            holder.txName.text=mBleDevices[position].name
+            val permissionCheck=if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+                ActivityCompat.checkSelfPermission(this@MainActivity,Manifest.permission.BLUETOOTH_CONNECT)
+            }else{
+                ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_ADMIN)
+            }
+            if (permissionCheck==PackageManager.PERMISSION_GRANTED) {
+                holder.txName.text = mBleDevices[position].name
+            }
             holder.txAddress.text=mBleDevices[position].address
             holder.txRssi.text=mRssiList[position].toString()
             holder.clDevice.setOnClickListener {
@@ -1848,7 +2058,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 rssi=holder.txRssi.text.toString().toInt()
                 toolbar?.title=strAddress
 
-                upper_cover_main.visibility=View.GONE
+                //upper_cover_main.visibility=View.GONE
                 btn_connection.isClickable=true
                 dialog.dismiss()
                 if (isScanning){
@@ -1869,4 +2079,299 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         val clDevice=v.findViewById<ConstraintLayout>(R.id.device_item)
     }
 
+    private fun updateUIForTestPhase(phase: TestPhase){
+        test_phase_text.visibility=View.VISIBLE
+        when(phase){
+            TestPhase.IDLE->{
+                // 初始狀態UI設置
+                test_phase_text.text=getText(R.string.choose_process)
+                test_phase_text.setTextColor(ContextCompat.getColor(this,R.color.word_black))
+
+                // 啟用空載測試按鈕，禁用其他按鈕
+                btn_no_load_test.isEnabled=true
+                btn_with_load_test.isEnabled=false
+
+                // 隱藏所有檢查區域
+                test_no_load_data_card.visibility=View.GONE
+                test_with_load_data_card.visibility=View.GONE
+                led_test_group.visibility=View.GONE
+
+            }
+            TestPhase.NO_LOAD->{
+                // 空載測試階段UI設置
+                test_phase_text.text=getText(R.string.no_load_testing)
+                test_phase_text.setTextColor(ContextCompat.getColor(this,R.color.word_blue))
+
+                // 禁用所有按鈕，直到測試完成
+                btn_no_load_test.isEnabled=false
+                btn_with_load_test.isEnabled=false
+
+                // show no load area
+                test_no_load_data_card.visibility=View.VISIBLE
+
+            }
+            TestPhase.NO_LOAD_DONE->{
+                // 空載測試階段UI設置
+                test_phase_text.text=getText(R.string.no_load_test_done)
+                test_phase_text.setTextColor(ContextCompat.getColor(this,R.color.word_black))
+
+                // no test測試完成 開放2個
+                btn_no_load_test.isEnabled=true
+                btn_with_load_test.isEnabled=true
+
+            }
+            TestPhase.WITH_LOAD->{
+                // 帶載測試階段UI設置
+                test_phase_text.text =getText(R.string.with_load_testing)
+                test_phase_text.setTextColor(ContextCompat.getColor(this, R.color.word_blue))
+
+                // 空載按鈕可用，其他禁用
+                btn_no_load_test.isEnabled = false
+                btn_with_load_test.isEnabled = false
+
+                // show with load area
+                test_with_load_data_card.visibility=View.VISIBLE
+            }
+            TestPhase.WITH_LOAD_DONE->{
+                // 帶載測試結束階段 UI設置
+
+                val withLoadTestDone=getText(R.string.with_load_test_done)
+                val checkLED=getText(R.string.please_check_led_status)
+
+                val spannableString=SpannableString("$withLoadTestDone\n$checkLED")
+
+                spannableString.setSpan(
+                    ForegroundColorSpan(ContextCompat.getColor(this,R.color.word_black)),
+                    0, withLoadTestDone.length,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannableString.setSpan(
+                    ForegroundColorSpan(ContextCompat.getColor(this,R.color.word_blue)),
+                    withLoadTestDone.length+1,spannableString.length,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                test_phase_text.text=spannableString
+
+                // with test測試完成 開放2個
+                btn_no_load_test.isEnabled=true
+                btn_with_load_test.isEnabled=true
+
+                // 顯示LED檢查區域
+                led_test_group.visibility = View.VISIBLE
+            }
+            TestPhase.COMPLETED->{
+                // 測試完成階段UI設置
+                test_phase_text.text = getText(R.string.test_finish)
+                test_phase_text.setTextColor(ContextCompat.getColor(this, R.color.word_black))
+
+                // 所有按鈕可用，可以重新測試
+                btn_no_load_test.isEnabled = true
+                btn_with_load_test.isEnabled = true
+
+                // 顯示result&save區域
+                lower_cover_main.visibility=View.GONE
+            }
+            TestPhase.RESET->{
+                resetAfterSetup(true)
+            }
+            TestPhase.DISCONNECT->{
+                resetAfterSetup(false)
+                upper_cover_main.visibility=View.VISIBLE
+                lower_cover_main.visibility=View.VISIBLE
+                progressbar.visibility=View.GONE
+            }
+        }
+    }
+    private fun setFirmwareResult(intent: Intent){
+        val version=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:"0"
+        isFirmwarePass=(version==strFirmwareVersion)
+
+        text_firmware.text=version
+        if (isFirmwarePass!!){
+            show_firmware.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+            text_firmware.setTextColor(Color.parseColor("#050505"))
+        }else{
+            show_firmware.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+            text_firmware.setTextColor(Color.RED)
+        }
+    }
+    private fun setTagResult(intent: Intent){
+        val tag=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:"0000"
+        isTagPass=(tag==strTagNumber)
+
+        text_tag.text=tag
+
+        if (isTagPass!!){
+            show_tag.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+            text_tag.setTextColor(Color.parseColor("#050505"))
+        }else{
+            show_tag.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+            text_tag.setTextColor(Color.RED)
+        }
+    }
+    private fun setRssiResult(intent: Intent){
+        val deviceRssi=intent.getIntExtra(BluetoothLeService.EXTRA_DATA,0)
+        val rssiSmall=(0-strRssiSmall.toInt())
+        val rssiLarge=(0-strRssiLarge.toInt())
+
+        isRssiPass= (deviceRssi in rssiSmall .. rssiLarge)
+
+        text_rssi.text=deviceRssi.toString()
+
+        if (isRssiPass!!){
+            show_rssi.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+            text_rssi.setTextColor(Color.parseColor("#050505"))
+        }else{
+            show_rssi.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+            text_rssi.setTextColor(Color.RED)
+        }
+    }
+    private fun setMeterResult(intent: Intent){
+        val meter=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:"000000"
+        text_meter.text=meter
+
+        upper_cover_main.visibility=View.GONE
+        progressbar.visibility=View.GONE
+        updateUIForTestPhase(TestPhase.IDLE)
+    }
+    private fun setCurrentResult(intent: Intent){
+        val strCurrent= intent.getStringExtra(BluetoothLeService.EXTRA_DATA) ?: return
+
+        if (loadType==0) {// no load
+            text_no_load_current.text = strCurrent
+            isCurrentPassNoLoad = strCurrent.toFloat()<=GattAttributes.MAX_NO_LOAD_CURRENT
+            if (isCurrentPassNoLoad!!) {
+                show_no_load_current.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                text_no_load_current.setTextColor(Color.parseColor("#050505"))
+            } else {
+                show_no_load_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                text_no_load_current.setTextColor(Color.RED)
+            }
+        }else if (loadType==1){// with load
+            text_with_load_current.text=strCurrent
+            isCurrentPassWithLoad = isWithInTolerance(GattAttributes.TARGET_CURRENT,toleranceWithLoadCurrent,strCurrent)
+            if (isCurrentPassWithLoad!!){
+                show_with_load_current.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                text_with_load_current.setTextColor(Color.parseColor("#050505"))
+            }else{
+                show_with_load_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                text_with_load_current.setTextColor(Color.RED)
+            }
+        }
+    }
+    private fun setVoltageResult(intent: Intent){
+        val strVoltage=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
+        if (loadType==0) {// no load
+            text_no_load_voltage.text = strVoltage
+            isVoltagePassNoLoad = isWithInTolerance(GattAttributes.TARGET_VOLTAGE,toleranceNoLoadVoltage,strVoltage)
+            if (isVoltagePassNoLoad!!) {
+                show_no_load_voltage.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                text_no_load_voltage.setTextColor(Color.parseColor("#050505"))
+            } else {
+                show_no_load_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                text_no_load_voltage.setTextColor(Color.RED)
+            }
+        }else if(loadType==1){// with load
+            text_with_load_voltage.text=strVoltage
+            isVoltagePassWithLoad= isWithInTolerance(GattAttributes.TARGET_VOLTAGE,toleranceWithLoadVoltage,strVoltage)
+            if (isVoltagePassWithLoad!!){
+                show_with_load_voltage.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                text_with_load_voltage.setTextColor(Color.parseColor("#050505"))
+            } else {
+                show_with_load_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                text_with_load_voltage.setTextColor(Color.RED)
+            }
+        }
+    }
+    private fun setWattResult(intent: Intent){
+        val strWatt=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
+        if (loadType==1){// with load
+            text_with_load_watt.text = strWatt
+            isWattPassWithLoad = isWithInTolerance(
+                GattAttributes.TARGET_VOLTAGE*GattAttributes.TARGET_CURRENT,
+                toleranceWithLoadVoltage+toleranceWithLoadCurrent,
+                strWatt)
+
+            if (isWattPassWithLoad!!) {
+                show_with_load_watt.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                text_with_load_watt.setTextColor(Color.parseColor("#050505"))
+            } else {
+                show_with_load_watt.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                text_with_load_watt.setTextColor(Color.RED)
+            }
+        }
+    }
+    private fun setPowerFactorResult(intent: Intent){
+        val strPowerFactor=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
+        if (loadType==1){// with load
+            text_with_load_power_factor.text = strPowerFactor
+            isPFPassWithLoad =
+                (strPowerFactor.toFloat() in GattAttributes.PF_LOW..GattAttributes.PF_HIGH)
+            if (isPFPassWithLoad!!) {
+                show_with_load_power_factor.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                text_with_load_power_factor.setTextColor(Color.parseColor("#050505"))
+            } else {
+                show_with_load_power_factor.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                text_with_load_power_factor.setTextColor(Color.RED)
+            }
+        }
+    }
+    private fun setLoadResult(intent: Intent){
+        if (loadType==1){// with load
+            text_with_load_wh.text=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
+        }
+    }
+
+    //應該用不到
+    private fun setRecordResult(intent: Intent){
+        val array=intent.getStringArrayListExtra(BluetoothLeService.EXTRA_DATA)
+        if (array!=null){
+            val deviceCurrent=array[2]
+            val deviceVoltage=array[3]
+            val deviceWatt=array[4]
+            val devicePowerFactor=array[5]
+            val deviceConsumption=array[6]
+
+            isCurrentPassNoLoad=(deviceCurrent.toFloat() in GattAttributes.CURRENT_LOW .. GattAttributes.CURRENT_HIGH)
+
+            text_no_load_current.text=deviceCurrent
+
+            if (isCurrentPassNoLoad!!){
+                show_no_load_current.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                text_no_load_current.setTextColor(Color.parseColor("#050505"))
+            }else{
+                show_no_load_current.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                text_no_load_current.setTextColor(Color.RED)
+            }
+
+            isVoltagePassNoLoad=(deviceVoltage.toFloat() in GattAttributes.VOLTAGE_LOW .. GattAttributes.VOLTAGE_HIGH)
+
+            text_no_load_voltage.text=deviceVoltage
+
+            if (isVoltagePassNoLoad!!){
+                show_no_load_voltage.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+                text_no_load_voltage.setTextColor(Color.parseColor("#050505"))
+            }else{
+                show_no_load_voltage.setImageResource(R.drawable.ic_baseline_do_not_disturb_24)
+                text_no_load_voltage.setTextColor(Color.RED)
+            }
+
+        }
+    }
+    private fun calculatePercentage(value:Int, percentage:Float, isPlus:Boolean):String{
+        val result=if (isPlus) {
+            value * (1f + percentage / 100f)
+        }else{
+            value*(1f-percentage/100f)
+        }
+
+        return if (result%1==0.0f){
+            result.toInt().toString()
+        }else{
+            String.format("%.2f",result).trimEnd('0').trimEnd('.')
+        }
+    }
+    private fun isWithInTolerance(targetValue:Int, tolerancePercentage:Float, input:String):Boolean{
+        val inputValue=input.toFloatOrNull()?:return false
+        val tolerance=targetValue*(tolerancePercentage/100)
+
+        return kotlin.math.abs(inputValue-targetValue)<=tolerance
+    }
 }

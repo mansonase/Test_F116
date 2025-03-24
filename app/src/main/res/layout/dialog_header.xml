@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="450dp"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/main_white_four_15_word_blue_2"
     android:orientation="vertical">
@@ -10,10 +10,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:text="@string/header"
         android:textColor="@color/word_blue"
         android:textStyle="bold"
+        android:id="@+id/header_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -49,12 +50,151 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:background="@color/word_blue"
         app:layout_constraintVertical_bias="0.12"/>
+    
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/expandable_section"
+        app:layout_constraintTop_toBottomOf="@id/header_line"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:paddingTop="10dp"
+        android:paddingBottom="5dp"
+        android:visibility="gone"
+        android:background="@color/main_grey">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tolerance_title"
+            android:text="@string/tolerance_percentage"
+            android:textSize="16sp"
+            android:textColor="@color/word_blue"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="5dp"
+            android:layout_marginStart="50dp"/>
+
+        <!-- No-load voltage dropdown -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/no_load_voltage_title"
+            android:text="@string/no_load_voltage"
+            android:textSize="16sp"
+            android:textColor="@color/word_blue"
+            app:layout_constraintTop_toBottomOf="@id/tolerance_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/no_load_voltage"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="10dp"
+            app:layout_constraintHorizontal_chainStyle="packed"/>
+        
+        <Spinner
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:id="@+id/no_load_voltage"
+            android:background="@drawable/blue_frame_arrow_down"
+            app:layout_constraintTop_toTopOf="@id/no_load_voltage_title"
+            app:layout_constraintBottom_toBottomOf="@id/no_load_voltage_title"
+            app:layout_constraintStart_toEndOf="@id/no_load_voltage_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingVertical="3dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/no_load_voltage_title"
+            app:layout_constraintBottom_toBottomOf="@id/no_load_voltage_title"
+            app:layout_constraintStart_toEndOf="@id/no_load_voltage"
+            android:textSize="16sp"
+            android:textColor="@color/word_blue"
+            android:text="%"
+            android:layout_marginStart="5dp" />
+        <!-- Load current dropdown -->
+        <TextView
+            android:id="@+id/load_current_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/with_load_current"
+            android:textSize="16sp"
+            android:textColor="@color/word_blue"
+            app:layout_constraintTop_toBottomOf="@id/no_load_voltage_title"
+            app:layout_constraintStart_toStartOf="@id/no_load_voltage_title"
+            app:layout_constraintEnd_toEndOf="@id/no_load_voltage_title"
+            android:layout_marginTop="15dp"/>
+
+        <Spinner
+            android:id="@+id/load_current"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:background="@drawable/blue_frame_arrow_down"
+            app:layout_constraintTop_toTopOf="@id/load_current_title"
+            app:layout_constraintBottom_toBottomOf="@id/load_current_title"
+            app:layout_constraintStart_toStartOf="@id/no_load_voltage"
+            android:paddingVertical="3dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/load_current_title"
+            app:layout_constraintBottom_toBottomOf="@id/load_current_title"
+            app:layout_constraintStart_toEndOf="@id/load_current"
+            android:textSize="16sp"
+            android:textColor="@color/word_blue"
+            android:text="%"
+            android:layout_marginStart="5dp" />
+        <!-- Load voltage dropdown -->
+        <TextView
+            android:id="@+id/load_voltage_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/with_load_voltage"
+            android:textSize="16sp"
+            android:textColor="@color/word_blue"
+            app:layout_constraintTop_toBottomOf="@id/load_current_title"
+            app:layout_constraintStart_toStartOf="@id/load_current_title"
+            app:layout_constraintEnd_toEndOf="@id/load_current_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"/>
+
+        <Spinner
+            android:id="@+id/load_voltage"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:background="@drawable/blue_frame_arrow_down"
+            app:layout_constraintTop_toTopOf="@id/load_voltage_title"
+            app:layout_constraintBottom_toBottomOf="@id/load_voltage_title"
+            app:layout_constraintStart_toStartOf="@id/load_current"
+            android:paddingVertical="3dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/load_voltage_title"
+            app:layout_constraintBottom_toBottomOf="@id/load_voltage_title"
+            app:layout_constraintStart_toEndOf="@id/load_voltage"
+            android:textSize="16sp"
+            android:textColor="@color/word_blue"
+            android:text="%"
+            android:layout_marginStart="5dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/main_form_section"
+        app:layout_constraintTop_toBottomOf="@+id/expandable_section"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="15dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/order_number"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:id="@+id/order_serial_title"
         android:textColor="@color/word_blue"
         app:layout_constraintTop_toTopOf="@+id/order_serial_1"
@@ -69,10 +209,10 @@
         android:layout_height="30dp"
         android:id="@+id/order_serial_1"
         android:maxLength="4"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textColor="@color/word_black"
         android:inputType="number"
-        app:layout_constraintTop_toBottomOf="@+id/header_line"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toEndOf="@+id/order_serial_title"
         app:layout_constraintEnd_toStartOf="@+id/order_serial_dash_1"
         app:layout_constraintBottom_toTopOf="@+id/firmware_number"
@@ -85,7 +225,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=" - "
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:id="@+id/order_serial_dash_1"
         android:textColor="@color/word_blue"
         app:layout_constraintTop_toTopOf="@+id/order_serial_1"
@@ -99,7 +239,7 @@
         android:id="@+id/order_serial_2"
         android:maxLength="5"
         android:textColor="@color/word_black"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:inputType="number"
         app:layout_constraintTop_toTopOf="@+id/order_serial_1"
         app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
@@ -114,7 +254,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=" - LOT: "
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:id="@+id/order_serial_dash_2"
         android:textColor="@color/word_blue"
         app:layout_constraintTop_toTopOf="@+id/order_serial_1"
@@ -129,7 +269,7 @@
         android:id="@+id/order_serial_lot"
         android:maxLength="2"
         android:textColor="@color/word_black"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:inputType="number"
         app:layout_constraintTop_toTopOf="@+id/order_serial_1"
         app:layout_constraintBottom_toBottomOf="@+id/order_serial_1"
@@ -146,7 +286,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/firmware_title"
         android:textColor="@color/word_blue"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:text="@string/firmware"
         app:layout_constraintTop_toTopOf="@+id/firmware_number"
         app:layout_constraintBottom_toBottomOf="@+id/firmware_number"
@@ -158,7 +298,7 @@
         android:id="@+id/firmware_number"
         android:maxLength="2"
         android:textColor="@color/word_black"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:inputType="number"
         app:layout_constraintTop_toBottomOf="@+id/order_serial_1"
         app:layout_constraintStart_toStartOf="@+id/order_serial_1"
@@ -166,14 +306,15 @@
         android:background="@drawable/main_white_four_15_word_blue_2"
         android:paddingStart="10px"
         android:nextFocusForward="@+id/tag_number"
-        android:imeOptions="actionNext|flagNoExtractUi"/>
+        android:imeOptions="actionNext|flagNoExtractUi"
+        android:layout_marginTop="15dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/tag_number_title"
         android:textColor="@color/word_blue"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:text="@string/tag_number"
         app:layout_constraintTop_toTopOf="@+id/tag_number"
         app:layout_constraintBottom_toBottomOf="@+id/tag_number"
@@ -185,20 +326,21 @@
         android:id="@+id/tag_number"
         android:maxLength="8"
         android:textColor="@color/word_black"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:inputType="number"
         app:layout_constraintTop_toBottomOf="@+id/firmware_number"
         app:layout_constraintStart_toStartOf="@+id/firmware_number"
         app:layout_constraintBottom_toTopOf="@+id/producing_time"
         android:background="@drawable/main_white_four_15_word_blue_2"
         android:paddingStart="10px"
-        android:imeOptions="flagNoExtractUi|actionDone"/>
+        android:imeOptions="flagNoExtractUi|actionDone"
+        android:layout_marginTop="15dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/producing_time_title"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textColor="@color/word_blue"
         android:text="@string/producing_time"
         app:layout_constraintTop_toTopOf="@+id/producing_time"
@@ -210,7 +352,7 @@
         android:layout_width="wrap_content"
         android:layout_height="30dp"
         android:id="@+id/producing_time"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:text="2021/10/11"
         android:paddingEnd="30dp"
         android:paddingStart="10dp"
@@ -219,13 +361,14 @@
         app:layout_constraintTop_toBottomOf="@+id/tag_number"
         app:layout_constraintStart_toStartOf="@+id/tag_number"
         app:layout_constraintBottom_toTopOf="@+id/testing_department"
-        android:background="@drawable/blue_frame_arrow_down"/>
+        android:background="@drawable/blue_frame_arrow_down"
+        android:layout_marginTop="15dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/testing_department_title"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:text="@string/testing_department"
         android:textColor="@color/word_blue"
         app:layout_constraintTop_toTopOf="@+id/testing_department"
@@ -241,7 +384,8 @@
         app:layout_constraintStart_toStartOf="@+id/producing_time"
         app:layout_constraintEnd_toEndOf="@+id/producing_time"
         app:layout_constraintBottom_toTopOf="@+id/meter"
-        android:paddingVertical="3dp"/>
+        android:paddingVertical="3dp"
+        android:layout_marginTop="15dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -251,7 +395,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/meter"
         android:text="@string/meter"
         android:textColor="@color/word_blue"
-        android:textSize="16dp"
+        android:textSize="16sp"
         />
 
 
@@ -263,20 +407,21 @@
         app:layout_constraintTop_toBottomOf="@+id/testing_department"
         app:layout_constraintBottom_toTopOf="@+id/rssi_small"
         android:maxLength="6"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textColor="@color/word_black"
         android:inputType="number"
         android:paddingStart="10px"
         android:background="@drawable/main_white_four_15_word_blue_2"
         android:nextFocusForward="@+id/meter_month"
-        android:imeOptions="actionNext|flagNoExtractUi"/>
+        android:imeOptions="actionNext|flagNoExtractUi"
+        android:layout_marginTop="15dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/rssi"
         android:textColor="@color/word_blue"
-        android:textSize="16dp"
+        android:textSize="16sp"
         app:layout_constraintTop_toTopOf="@+id/rssi_small"
         app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
         app:layout_constraintEnd_toEndOf="@+id/testing_department_title" />
@@ -286,13 +431,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=" - "
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:id="@+id/rssi_small_sign"
         android:textColor="@color/word_black"
         app:layout_constraintTop_toTopOf="@+id/rssi_small"
         app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
-        app:layout_constraintEnd_toStartOf="@+id/rssi_small" />
+        app:layout_constraintEnd_toStartOf="@+id/rssi_small"
+        android:layout_marginTop="15dp"/>
 
     <EditText
         android:layout_width="50dp"
@@ -300,7 +446,7 @@
         android:id="@+id/rssi_small"
         android:maxLength="2"
         android:textColor="@color/word_black"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:paddingStart="10px"
         android:inputType="number"
         app:layout_constraintTop_toBottomOf="@+id/meter"
@@ -308,13 +454,14 @@
         app:layout_constraintBottom_toTopOf="@+id/save_button"
         android:background="@drawable/main_white_four_15_word_blue_2"
         android:nextFocusForward="@+id/rssi_large"
-        android:imeOptions="actionNext|flagNoExtractUi"/>
+        android:imeOptions="actionNext|flagNoExtractUi"
+        android:layout_marginTop="15dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=" ~ "
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:id="@+id/rssi_dash"
         android:textColor="@color/word_blue"
         app:layout_constraintTop_toTopOf="@+id/rssi_small"
@@ -327,7 +474,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=" - "
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:id="@+id/rssi_large_sign"
         android:textColor="@color/word_black"
@@ -342,7 +489,7 @@
         android:id="@+id/rssi_large"
         android:maxLength="2"
         android:textColor="@color/word_black"
-        android:textSize="16dp"
+        android:textSize="16sp"
 
         android:paddingStart="10px"
         android:inputType="number"
@@ -357,7 +504,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/rssi_dbm"
         android:textColor="@color/word_blue"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:text="@string/dbm"
         app:layout_constraintTop_toTopOf="@+id/rssi_small"
         app:layout_constraintBottom_toBottomOf="@+id/rssi_small"
@@ -369,13 +516,15 @@
         android:layout_height="wrap_content"
         android:id="@+id/save_button"
         android:text="@string/save"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:backgroundTint="@color/word_blue"
         android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@+id/rssi_small"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginVertical="15dp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -68,4 +68,26 @@
 
     <string name="saved_successfully">储存成功</string>
     <string name="pass_saved_successfully">测试通过\n\n储存成功</string>
+
+    <string name="device_information">设备信息</string>
+    <string name="test_step">测试流程</string>
+    <string name="choose_process">请选择测试阶段</string>
+    <string name="no_load_test">1. 空载测试</string>
+    <string name="with_load_test">2. 带载测试</string>
+    <string name="led_check">3. LED检查</string>
+    <string name="test_data_no_load">空载测试数据</string>
+    <string name="test_data_with_load">带载测试数据</string>
+    <string name="test_led">LED灯号检查</string>
+    <string name="test_result">测试结果</string>
+    <string name="reset">重置</string>
+    <string name="no_load_testing">空载测试中…</string>
+    <string name="no_load_test_done">空载测试完成</string>
+    <string name="with_load_testing">带载测试中…</string>
+    <string name="with_load_test_done">带载测试完成</string>
+    <string name="please_check_led_status">请检查LED灯状态</string>
+    <string name="test_finish">测试完成</string>
+    <string name="no_load_voltage">空载电压  &#177;</string>
+    <string name="with_load_voltage">带载电压  &#177;</string>
+    <string name="with_load_current">带载电流  &#177;</string>
+    <string name="tolerance_percentage"><u>误差容忍百分比</u></string>
 </resources>
