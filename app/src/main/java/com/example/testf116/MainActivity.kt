@@ -1940,7 +1940,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     val meter=mItem.meter
 
                     val finalResult=booleanToString(mItem.result)
-                    
+
                     val timestamp=format.format(mItem.aa24Timestamp)
 
                     csvText.append("$serialNumber,")
