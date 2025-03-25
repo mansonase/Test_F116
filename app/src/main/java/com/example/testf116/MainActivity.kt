@@ -1940,8 +1940,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     val meter=mItem.meter
 
                     val finalResult=booleanToString(mItem.result)
-                    val calendar=Calendar.getInstance()
-                    calendar.timeInMillis=mItem.aa24Timestamp
+                    
                     val timestamp=format.format(mItem.aa24Timestamp)
 
                     csvText.append("$serialNumber,")
