@@ -19,6 +19,8 @@ class GattAttributes {
         const val RSSI_LARGE="rssi_large"
         const val TEST_DEP="test_department"
         const val PRODUCING_TIME="producing_time"
+        const val TARGET_VOLTAGE_TAG="target_voltage"
+        const val TARGET_CURRENT_TAG="target_current"
         const val TOLERANCE_NO_LOAD_VOLTAGE="tolerance_no_load_voltage"
         const val TOLERANCE_WITH_LOAD_CURRENT="tolerance_with_load_current"
         const val TOLERANCE_WITH_LOAD_VOLTAGE="tolerance_with_load_voltage"

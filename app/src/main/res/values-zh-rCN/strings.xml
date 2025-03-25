@@ -90,4 +90,7 @@
     <string name="with_load_voltage">带载电压  &#177;</string>
     <string name="with_load_current">带载电流  &#177;</string>
     <string name="tolerance_percentage"><u>误差容忍百分比</u></string>
+    <string name="target_standard"><u>目标值</u></string>
+    <string name="target_voltage">目标电压 : </string>
+    <string name="target_current">目标电流 : </string>
 </resources>

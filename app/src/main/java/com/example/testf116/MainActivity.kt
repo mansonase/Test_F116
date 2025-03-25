@@ -126,6 +126,8 @@ import kotlinx.android.synthetic.main.dialog_header.rssi_large
 import kotlinx.android.synthetic.main.dialog_header.rssi_small
 import kotlinx.android.synthetic.main.dialog_header.save_button
 import kotlinx.android.synthetic.main.dialog_header.tag_number
+import kotlinx.android.synthetic.main.dialog_header.target_current
+import kotlinx.android.synthetic.main.dialog_header.target_voltage
 import kotlinx.android.synthetic.main.dialog_header.testing_department
 import kotlinx.android.synthetic.main.dialog_scan_result.recyclerview
 import kotlinx.android.synthetic.main.dialog_scan_result.refreshlayout
@@ -183,6 +185,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private lateinit var strRssiLarge:String
     private lateinit var strProducingTime:String
 
+    private var targetVoltage=0
+    private var targetCurrent=0
     private var toleranceNoLoadVoltage=0f
     private var toleranceWithLoadCurrent=0f
     private var toleranceWithLoadVoltage=0f
@@ -192,7 +196,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private var powerOffEpoch=0L
     private var aa15Epoch=0L
 
-    private lateinit var calendar:Calendar
     private var testCounts=0
     private var serial=0
 
@@ -243,8 +246,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         bindService(serviceIntent,mServiceConnection, BIND_AUTO_CREATE)
 
 
-        calendar=Calendar.getInstance()
-
         setToolbar()
         initView()
         initStandard()
@@ -264,20 +265,17 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         if (deviceArrayList!=null&&rssiArrayList!=null) {
             createDialogScanResult()
         }
+        hideNavigationBar()
+
+        registerReceiver(mReceiver, makeGattUpdateIntentFilter())
     }
 
     override fun onResume() {
         super.onResume()
-        hideNavigationBar()
-
-        registerReceiver(mReceiver, makeGattUpdateIntentFilter())
-
-
     }
 
     override fun onPause() {
         super.onPause()
-        unregisterReceiver(mReceiver)
     }
 
     override fun onStop() {
@@ -286,6 +284,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(mReceiver)
         unbindService(mServiceConnection)
         mBluetoothLeService=null
     }
@@ -569,6 +568,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         strProducingTime=sharedPreferences.getString(GattAttributes.PRODUCING_TIME,"0").toString()
         intTestDepartment=sharedPreferences.getInt(GattAttributes.TEST_DEP,-1)
 
+        targetVoltage=sharedPreferences.getInt(GattAttributes.TARGET_VOLTAGE_TAG,GattAttributes.TARGET_VOLTAGE)
+        targetCurrent=sharedPreferences.getInt(GattAttributes.TARGET_CURRENT_TAG,GattAttributes.TARGET_CURRENT)
         toleranceNoLoadVoltage=sharedPreferences.getFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_NO_LOAD_VOLTAGE)
         toleranceWithLoadCurrent=sharedPreferences.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_CURRENT)
         toleranceWithLoadVoltage=sharedPreferences.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_VOLTAGE)
@@ -606,7 +607,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         dialog.meter.hint=strMeter
         dialog.rssi_small.hint=strRssiSmall
         dialog.rssi_large.hint=strRssiLarge
-        calendar= Calendar.getInstance()
+        val calendar= Calendar.getInstance()
         dialog.producing_time.text=calendarToText(calendar)
 
         val spinnerAdapter=ArrayAdapter.createFromResource(this,R.array.test_dep,android.R.layout.simple_dropdown_item_1line)
@@ -691,6 +692,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
                 return@setOnClickListener
             }
+            targetVoltage=dialog.target_voltage.selectedItem.toString().toInt()
+            targetCurrent=dialog.target_current.selectedItem.toString().toInt()
             toleranceNoLoadVoltage=dialog.no_load_voltage.selectedItem.toString().toFloat()
             toleranceWithLoadCurrent=dialog.load_current.selectedItem.toString().toFloat()
             toleranceWithLoadVoltage=dialog.load_voltage.selectedItem.toString().toFloat()
@@ -708,6 +711,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     .putString(GattAttributes.RSSI_LARGE,strRssiLarge)
                     .putString(GattAttributes.PRODUCING_TIME,strProducingTime)
                     .putInt(GattAttributes.TEST_DEP,intTestDepartment)
+                    .putInt(GattAttributes.TARGET_VOLTAGE_TAG,targetVoltage)
+                    .putInt(GattAttributes.TARGET_CURRENT_TAG,targetCurrent)
                     .putFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE,toleranceNoLoadVoltage)
                     .putFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT,toleranceWithLoadCurrent)
                     .putFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE,toleranceWithLoadVoltage)
@@ -742,6 +747,22 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 clickCount=0
             }
         }
+        // Set up Target voltage spinner
+        val targetVoltageValues= arrayOf("100","110","220","230")
+        val targetVoltageAdapter=ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,targetVoltageValues)
+        dialog.target_voltage.adapter=targetVoltageAdapter
+        val strTargetVoltage=targetVoltage.toString()
+        val targetVoltagePos=targetVoltageValues.indexOf(strTargetVoltage)
+        dialog.target_voltage.setSelection(targetVoltagePos)
+
+        // Set up Target current spinner
+        val targetCurrentValues= arrayOf("1","2","5","10","15","16")
+        val targetCurrentAdapter=ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,targetCurrentValues)
+        dialog.target_current.adapter=targetCurrentAdapter
+        val strTargetCurrent=targetCurrent.toString()
+        val targetCurrentPos=targetCurrentValues.indexOf(strTargetCurrent)
+        dialog.target_current.setSelection(targetCurrentPos)
+
         // Set up no-load voltage spinner
         val voltageValues= arrayOf("1.0","1.5","2.0","2.5","3.0")
         val noLoadVoltageAdapter=ArrayAdapter(
@@ -1346,7 +1367,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             Log.d("writesu","$reConnectCount, step-4")
 
             runOnUiThread {
-                calendar=Calendar.getInstance()
+                val calendar=Calendar.getInstance()
                 aa15Epoch=calendar.timeInMillis
                 checkAllPass()
                 progressbar.visibility=View.GONE
@@ -1393,7 +1414,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             GattAttributes.mPowerOn->{
                 CoroutineScope(Dispatchers.IO).launch {
                     isPowerActivated=true
-                    calendar=Calendar.getInstance()
+                    val calendar=Calendar.getInstance()
                     powerOnEpoch=calendar.timeInMillis
                     channel.send(Unit)
                 }
@@ -1401,7 +1422,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             GattAttributes.mPowerOff->{
                 CoroutineScope(Dispatchers.IO).launch {
                     isPowerActivated=false
-                    calendar=Calendar.getInstance()
+                    val calendar=Calendar.getInstance()
                     powerOffEpoch=calendar.timeInMillis
                     channel.send(Unit)
                 }
@@ -1561,7 +1582,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             doRelay(false)
             channel.receive()
 
-            calendar=Calendar.getInstance()
+            val calendar=Calendar.getInstance()
             aa15Epoch=calendar.timeInMillis
             checkAllPass()
             progressbar.visibility=View.GONE
@@ -1672,7 +1693,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         val realm=Realm.getDefaultInstance()
 
-        calendar=Calendar.getInstance()
+        val calendar=Calendar.getInstance()
         realm.beginTransaction()
         val item=ExamItem()
         item.keyIndex=calendar.timeInMillis
@@ -1843,22 +1864,22 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     "BLE Rssi:-$strRssiSmall~-$strRssiLarge",
                     "Current No-Load:<=${GattAttributes.MAX_NO_LOAD_CURRENT}A",
                     "Voltage No-Load:${
-                        calculatePercentage(GattAttributes.TARGET_VOLTAGE, toleranceNoLoadVoltage, false)
+                        calculatePercentage(targetVoltage, toleranceNoLoadVoltage, false)
                     }~${
-                        calculatePercentage(GattAttributes.TARGET_VOLTAGE, toleranceNoLoadVoltage, true)}",
+                        calculatePercentage(targetVoltage, toleranceNoLoadVoltage, true)}",
 
                     "Current With-Load:${
-                        calculatePercentage(GattAttributes.TARGET_CURRENT,toleranceWithLoadCurrent,false)
+                        calculatePercentage(targetCurrent,toleranceWithLoadCurrent,false)
                     }~${
-                        calculatePercentage(GattAttributes.TARGET_CURRENT,toleranceWithLoadCurrent,true)}",
+                        calculatePercentage(targetCurrent,toleranceWithLoadCurrent,true)}",
                     "Voltage With-Load:${
-                        calculatePercentage(GattAttributes.TARGET_VOLTAGE,toleranceWithLoadVoltage,false)
+                        calculatePercentage(targetVoltage,toleranceWithLoadVoltage,false)
                     }~${
-                        calculatePercentage(GattAttributes.TARGET_VOLTAGE,toleranceWithLoadVoltage,true)}",
+                        calculatePercentage(targetVoltage,toleranceWithLoadVoltage,true)}",
                     "Watt With-Load:${
-                        calculatePercentage(GattAttributes.TARGET_VOLTAGE*GattAttributes.TARGET_CURRENT,toleranceWithLoadVoltage+toleranceWithLoadCurrent,false)
+                        calculatePercentage(targetVoltage*targetCurrent,toleranceWithLoadVoltage+toleranceWithLoadCurrent,false)
                     }~${
-                        calculatePercentage(GattAttributes.TARGET_VOLTAGE*GattAttributes.TARGET_CURRENT,toleranceWithLoadVoltage+toleranceWithLoadCurrent,true)}",
+                        calculatePercentage(targetVoltage*targetCurrent,toleranceWithLoadVoltage+toleranceWithLoadCurrent,true)}",
                     "PF With-Load:${GattAttributes.PF_LOW}~${GattAttributes.PF_HIGH}",
                     "Watt/Hour With-Load",
 
@@ -1919,8 +1940,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     val meter=mItem.meter
 
                     val finalResult=booleanToString(mItem.result)
+                    val calendar=Calendar.getInstance()
                     calendar.timeInMillis=mItem.aa24Timestamp
-                    val timestamp=format.format(calendar.time)
+                    val timestamp=format.format(mItem.aa24Timestamp)
 
                     csvText.append("$serialNumber,")
                             .append("$firmware,")
@@ -2246,7 +2268,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             }
         }else if (loadType==1){// with load
             text_with_load_current.text=strCurrent
-            isCurrentPassWithLoad = isWithInTolerance(GattAttributes.TARGET_CURRENT,toleranceWithLoadCurrent,strCurrent)
+            isCurrentPassWithLoad = isWithInTolerance(targetCurrent,toleranceWithLoadCurrent,strCurrent)
             if (isCurrentPassWithLoad!!){
                 show_with_load_current.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
                 text_with_load_current.setTextColor(Color.parseColor("#050505"))
@@ -2260,7 +2282,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         val strVoltage=intent.getStringExtra(BluetoothLeService.EXTRA_DATA)?:return
         if (loadType==0) {// no load
             text_no_load_voltage.text = strVoltage
-            isVoltagePassNoLoad = isWithInTolerance(GattAttributes.TARGET_VOLTAGE,toleranceNoLoadVoltage,strVoltage)
+            isVoltagePassNoLoad = isWithInTolerance(targetVoltage,toleranceNoLoadVoltage,strVoltage)
             if (isVoltagePassNoLoad!!) {
                 show_no_load_voltage.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
                 text_no_load_voltage.setTextColor(Color.parseColor("#050505"))
@@ -2270,7 +2292,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             }
         }else if(loadType==1){// with load
             text_with_load_voltage.text=strVoltage
-            isVoltagePassWithLoad= isWithInTolerance(GattAttributes.TARGET_VOLTAGE,toleranceWithLoadVoltage,strVoltage)
+            isVoltagePassWithLoad= isWithInTolerance(targetVoltage,toleranceWithLoadVoltage,strVoltage)
             if (isVoltagePassWithLoad!!){
                 show_with_load_voltage.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
                 text_with_load_voltage.setTextColor(Color.parseColor("#050505"))
@@ -2285,7 +2307,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         if (loadType==1){// with load
             text_with_load_watt.text = strWatt
             isWattPassWithLoad = isWithInTolerance(
-                GattAttributes.TARGET_VOLTAGE*GattAttributes.TARGET_CURRENT,
+                targetVoltage*targetCurrent,
                 toleranceWithLoadVoltage+toleranceWithLoadCurrent,
                 strWatt)
 

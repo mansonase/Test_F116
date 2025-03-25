@@ -57,7 +57,7 @@
                         app:layout_constraintStart_toStartOf="parent"/>
                     <!-- 連接按鈕 -->
                     <Button
-                        android:layout_width="120dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/btn_connection"
                         android:textStyle="bold"
@@ -618,7 +618,7 @@
                 android:layout_margin="8dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintTop_toBottomOf="@+id/test_with_load_data_card"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -665,7 +665,7 @@
                         android:id="@+id/fail_led_1"
                         android:textSize="14sp"
                         android:textColor="@color/white"
-                        android:background="@android:color/holo_red_light"
+                        android:background="@drawable/btn_led_red"
                         app:layout_constraintTop_toTopOf="@+id/title_led_1"
                         app:layout_constraintBottom_toBottomOf="@+id/title_led_1"
                         app:layout_constraintEnd_toStartOf="@+id/pass_led_1"
@@ -677,7 +677,7 @@
                         android:textSize="14sp"
                         android:text="@string/pass"
                         android:id="@+id/pass_led_1"
-                        android:background="@android:color/holo_green_dark"
+                        android:background="@drawable/btn_led_green"
                         app:layout_constraintTop_toTopOf="@+id/title_led_1"
                         app:layout_constraintBottom_toBottomOf="@+id/title_led_1"
                         app:layout_constraintEnd_toEndOf="parent"/>
@@ -708,11 +708,11 @@
                         android:id="@+id/fail_led_2"
                         android:textSize="14sp"
                         android:textColor="@color/white"
-                        android:background="@android:color/holo_red_light"
+                        android:background="@drawable/btn_led_red"
                         app:layout_constraintTop_toTopOf="@+id/title_led_2"
                         app:layout_constraintBottom_toBottomOf="@+id/title_led_2"
                         app:layout_constraintEnd_toStartOf="@+id/pass_led_2"
-                        android:layout_marginEnd="8dp"/>
+                        android:layout_marginEnd="8dp" />
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -720,7 +720,7 @@
                         android:textSize="14sp"
                         android:text="@string/pass"
                         android:id="@+id/pass_led_2"
-                        android:background="@android:color/holo_green_dark"
+                        android:background="@drawable/btn_led_green"
                         app:layout_constraintTop_toTopOf="@+id/title_led_2"
                         app:layout_constraintBottom_toBottomOf="@+id/title_led_2"
                         app:layout_constraintEnd_toEndOf="parent"/>
@@ -751,7 +751,7 @@
                         android:id="@+id/fail_led_3"
                         android:textSize="14sp"
                         android:textColor="@color/white"
-                        android:background="@android:color/holo_red_light"
+                        android:background="@drawable/btn_led_red"
                         app:layout_constraintTop_toTopOf="@+id/title_led_3"
                         app:layout_constraintBottom_toBottomOf="@+id/title_led_3"
                         app:layout_constraintEnd_toStartOf="@+id/pass_led_3"
@@ -763,7 +763,7 @@
                         android:textSize="14sp"
                         android:text="@string/pass"
                         android:id="@+id/pass_led_3"
-                        android:background="@android:color/holo_green_dark"
+                        android:background="@drawable/btn_led_green"
                         app:layout_constraintTop_toTopOf="@+id/title_led_3"
                         app:layout_constraintBottom_toBottomOf="@+id/title_led_3"
                         app:layout_constraintEnd_toEndOf="parent"/>
@@ -794,7 +794,7 @@
                         android:id="@+id/fail_led_4"
                         android:textSize="14sp"
                         android:textColor="@color/white"
-                        android:background="@android:color/holo_red_light"
+                        android:background="@drawable/btn_led_red"
                         app:layout_constraintTop_toTopOf="@+id/title_led_4"
                         app:layout_constraintBottom_toBottomOf="@+id/title_led_4"
                         app:layout_constraintEnd_toStartOf="@+id/pass_led_4"
@@ -806,7 +806,7 @@
                         android:textSize="14sp"
                         android:text="@string/pass"
                         android:id="@+id/pass_led_4"
-                        android:background="@android:color/holo_green_dark"
+                        android:background="@drawable/btn_led_green"
                         app:layout_constraintTop_toTopOf="@+id/title_led_4"
                         app:layout_constraintBottom_toBottomOf="@+id/title_led_4"
                         app:layout_constraintEnd_toEndOf="parent"/>

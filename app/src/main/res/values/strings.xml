@@ -95,4 +95,7 @@
     <string name="with_load_voltage">With-Load Voltage &#177;</string>
     <string name="with_load_current">With-Load Current &#177;</string>
     <string name="tolerance_percentage"><u>Tolerance Percentage</u></string>
+    <string name="target_standard"><u>Target Standard</u></string>
+    <string name="target_voltage">Target Voltage : </string>
+    <string name="target_current">Target Current : </string>
 </resources>
