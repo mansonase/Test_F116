@@ -172,8 +172,6 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private var isConnected=false
     private var isPowerActivated=false
 
-    private lateinit var sharedPreferences: SharedPreferences
-
     private lateinit var strOrderSerialOne:String
     private lateinit var strOrderSerialTwo:String
     //private lateinit var strLotNumber:String
@@ -515,7 +513,8 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     }
     private fun initView(){
 
-        sharedPreferences=getSharedPreferences("f116_db", MODE_PRIVATE)
+
+        strOrderSerialTwo=getSharedPreferences("f116_db", MODE_PRIVATE).getString(GattAttributes.ORDER_SERIAL_2,"00000").toString()
 
         btn_connection.setOnClickListener(this)
         //btn_test.setOnClickListener(this)
@@ -557,22 +556,25 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     }
 
     private fun initStandard(){
-        strOrderSerialOne=sharedPreferences.getString(GattAttributes.ORDER_SERIAL_1,"0000").toString()
-        strOrderSerialTwo=sharedPreferences.getString(GattAttributes.ORDER_SERIAL_2,"00000").toString()
-        //strLotNumber=sharedPreferences.getString(GattAttributes.LOT_NUMBER,"0").toString()
-        strFirmwareVersion=sharedPreferences.getString(GattAttributes.FIRMWARE,"0").toString()
-        strTagNumber=sharedPreferences.getString(GattAttributes.TAG,"00000000").toString()
-        strMeter=sharedPreferences.getString(GattAttributes.METER,"000000").toString()
-        strRssiSmall=sharedPreferences.getString(GattAttributes.RSSI_SMALL,"0").toString()
-        strRssiLarge=sharedPreferences.getString(GattAttributes.RSSI_LARGE,"0").toString()
-        strProducingTime=sharedPreferences.getString(GattAttributes.PRODUCING_TIME,"0").toString()
-        intTestDepartment=sharedPreferences.getInt(GattAttributes.TEST_DEP,-1)
+        val dbString="F116_$strOrderSerialTwo"
+        val shared=getSharedPreferences(dbString, MODE_PRIVATE)
 
-        targetVoltage=sharedPreferences.getInt(GattAttributes.TARGET_VOLTAGE_TAG,GattAttributes.TARGET_VOLTAGE)
-        targetCurrent=sharedPreferences.getInt(GattAttributes.TARGET_CURRENT_TAG,GattAttributes.TARGET_CURRENT)
-        toleranceNoLoadVoltage=sharedPreferences.getFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_NO_LOAD_VOLTAGE)
-        toleranceWithLoadCurrent=sharedPreferences.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_CURRENT)
-        toleranceWithLoadVoltage=sharedPreferences.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_VOLTAGE)
+        strOrderSerialOne=shared.getString(GattAttributes.ORDER_SERIAL_1,"0000").toString()
+        strOrderSerialTwo=shared.getString(GattAttributes.ORDER_SERIAL_2,strOrderSerialTwo).toString()
+        //strLotNumber=sharedPreferences.getString(GattAttributes.LOT_NUMBER,"0").toString()
+        strFirmwareVersion=shared.getString(GattAttributes.FIRMWARE,"0").toString()
+        strTagNumber=shared.getString(GattAttributes.TAG,"00000000").toString()
+        strMeter=shared.getString(GattAttributes.METER,"000000").toString()
+        strRssiSmall=shared.getString(GattAttributes.RSSI_SMALL,"0").toString()
+        strRssiLarge=shared.getString(GattAttributes.RSSI_LARGE,"0").toString()
+        strProducingTime=shared.getString(GattAttributes.PRODUCING_TIME,"0").toString()
+        intTestDepartment=shared.getInt(GattAttributes.TEST_DEP,-1)
+
+        targetVoltage=shared.getInt(GattAttributes.TARGET_VOLTAGE_TAG,GattAttributes.TARGET_VOLTAGE)
+        targetCurrent=shared.getInt(GattAttributes.TARGET_CURRENT_TAG,GattAttributes.TARGET_CURRENT)
+        toleranceNoLoadVoltage=shared.getFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_NO_LOAD_VOLTAGE)
+        toleranceWithLoadCurrent=shared.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_CURRENT)
+        toleranceWithLoadVoltage=shared.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_VOLTAGE)
         Log.d("testTolerance","no-load V $toleranceNoLoadVoltage, with-load C $toleranceWithLoadCurrent, with-load V $toleranceWithLoadVoltage")
     }
 
@@ -637,7 +639,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 dialog.order_serial_1.hint.toString()
             }
             strOrderSerialTwo=if (dialog.order_serial_2.text.isNotEmpty()){
-                dialog.order_serial_2.text.toString()
+                dialog.order_serial_2.text.toString().padStart(5,'0')
             }else{
                 dialog.order_serial_2.hint.toString()
             }
@@ -699,7 +701,12 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             toleranceWithLoadVoltage=dialog.load_voltage.selectedItem.toString().toFloat()
 
 
-            sharedPreferences.edit()
+            getSharedPreferences("f116_db", MODE_PRIVATE).edit()
+                .putString(GattAttributes.ORDER_SERIAL_2,strOrderSerialTwo)
+                .apply()
+
+            val dbString="F116_$strOrderSerialTwo"
+            getSharedPreferences(dbString, MODE_PRIVATE).edit()
                     .putString(GattAttributes.ORDER_SERIAL_1,strOrderSerialOne)
                     .putString(GattAttributes.ORDER_SERIAL_2,strOrderSerialTwo)
                     //.putString(GattAttributes.LOT_NUMBER,strLotNumber)
@@ -846,9 +853,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         val realm=Realm.getDefaultInstance()
         val mDevice=realm.where(ExamItem::class.java)
+                .equalTo("productLotNumber",strOrderSerialTwo)
                 .equalTo("testNumber",0.toInt())
                 .count()
         val mTest=realm.where(ExamItem::class.java)
+                .equalTo("productLotNumber",strOrderSerialTwo)
                 .count()
         dialog.total_device.text=("${getString(R.string.total_devices)} $mDevice")
         dialog.total_tests.text=("${getString(R.string.total_tests)} $mTest")
@@ -1645,12 +1654,19 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         text_result.setText(R.string.na)
         text_result.setTextColor(Color.parseColor("#050505"))
 
-        isFirmwarePass=null
-        isTagPass=null
-        isRssiPass=null
+        if (!isSoftReset) {
+            isFirmwarePass = null
+            isTagPass = null
+            isRssiPass = null
+        }
 
         isCurrentPassNoLoad=null
         isVoltagePassNoLoad=null
+
+        isCurrentPassWithLoad=null
+        isVoltagePassWithLoad=null
+        isWattPassWithLoad=null
+        isPFPassWithLoad=null
 
         isLED1Pass=null
         isLED2Pass=null
@@ -1662,13 +1678,18 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private fun checkAllPass(){
         //6/15去掉 isMeterpass
         if (isLED1Pass!=null&&isLED2Pass!=null&&isLED3Pass!=null&&isLED4Pass!=null&&
-            isFirmwarePass!=null&&isTagPass!=null&&isRssiPass!=null&&isCurrentPassNoLoad!=null&&isVoltagePassNoLoad!=null){
+            isFirmwarePass!=null&&isTagPass!=null&&isRssiPass!=null&&
+            isCurrentPassNoLoad!=null&&isVoltagePassNoLoad!=null&&
+            isCurrentPassWithLoad!=null&&isVoltagePassWithLoad!=null&&isWattPassWithLoad!=null&&isPFPassWithLoad!=null){
 
             updateUIForTestPhase(TestPhase.COMPLETED)
             isAllowedSaving=true
 
             //6/15去掉 isMeterpass
-            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&isFirmwarePass!!&&isTagPass!!&&isRssiPass!!&&isCurrentPassNoLoad!!&&isVoltagePassNoLoad!!){
+            if (isLED1Pass!!&&isLED2Pass!!&&isLED3Pass!!&&isLED4Pass!!&&
+                isFirmwarePass!!&&isTagPass!!&&isRssiPass!!&&
+                isCurrentPassNoLoad!!&&isVoltagePassNoLoad!!&&
+                isCurrentPassWithLoad!!&&isVoltagePassWithLoad!!&&isWattPassWithLoad!!&&isPFPassWithLoad!!){
 
                 isResultPass=true
                 text_result.setTextColor(Color.GREEN)
@@ -1701,7 +1722,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         item.serialNumber=serial
         item.testNumber=testCounts
 
-        //item.productLotNumber=strLotNumber
+        item.productLotNumber=strOrderSerialTwo
         item.firmwareNumber=strFirmwareVersion
         item.macAddress=strAddress
         item.tagNumber=text_tag.text.toString()
@@ -1747,6 +1768,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
         //檢查之前有沒有用此address的測試記錄
         val previous=realm.where(ExamItem::class.java)
+                .equalTo("productLotNumber",strOrderSerialTwo)
                 .equalTo("macAddress",strAddress)
                 .findFirst()
 
@@ -1757,6 +1779,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                     // B.是連了很多次,但未測過此address
             //testCounts都設為0
             val lastItem=realm.where(ExamItem::class.java)
+                    .equalTo("productLotNumber",strOrderSerialTwo)
                     .sort("serialNumber",Sort.DESCENDING)
                     .findFirst()
 
@@ -1785,6 +1808,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         val realm=Realm.getDefaultInstance()
 
         val result=realm.where(ExamItem::class.java)
+                .equalTo("productLotNumber",strOrderSerialTwo)
                 .equalTo("macAddress",strAddress)
                 .sort("testNumber",Sort.DESCENDING)
                 .findFirst()
@@ -1837,8 +1861,11 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 progressbar.visibility=View.VISIBLE
             }
 
+            //直接抓出這一批貨(相同"productLotNumber",strOrderSerialTwo)裡面, testNumber為0的數量
+            //一個裝置至少測一次, 所以至少有一次testNumber==0的測試
             val realm=Realm.getDefaultInstance()
             val count=realm.where(ExamItem::class.java)
+                    .equalTo("productLotNumber",strOrderSerialTwo)
                     .equalTo("testNumber",0.toInt())
                     .count().toInt()
 
@@ -1908,7 +1935,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
             for (i in 1 .. count){
 
+                //如果該批貨,其中該serial裝置有超過1次test, 就全部都列出來
                 val result=realm.where(ExamItem::class.java)
+                        .equalTo("productLotNumber",strOrderSerialTwo)
                         .equalTo("serialNumber",i)
                         .sort("testNumber",Sort.ASCENDING)
                         .findAll()
@@ -1961,7 +1990,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                             .append("$led4,")
                             .append("$meter,")
                             .append("$finalResult,")
-                            .append("$timestamp\n")
+                            .append("=\"$timestamp\"\n")
 
                 }
             }

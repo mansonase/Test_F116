@@ -20,7 +20,8 @@ open class ExamItem :RealmObject(){
     get() {return field}
     set(value) {field=value}
 
-    //Lot
+    //Lot 用來當sharedprefereces的篩選條件, 作為strOrderSerialTwo的儲存字串
+    //同時用realm時也是當作查詢的條件, 一批貨是1個productLotNumber==strOrderSerialTwo
     var productLotNumber:String=""
     get() {return field}
     set(value) {field=value}
