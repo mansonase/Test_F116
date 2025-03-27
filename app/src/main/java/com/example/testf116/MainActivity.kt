@@ -222,6 +222,10 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
     private var clickCount=0
 
+    //true  (因為有點7下)是要存target current voltage, tolerance等5個進階數值
+    //false 則不存(因為沒有點7下) 只是切換到另一個batch
+    private var isSavingAdvanceSettings=false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -575,7 +579,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         toleranceNoLoadVoltage=shared.getFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_NO_LOAD_VOLTAGE)
         toleranceWithLoadCurrent=shared.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_CURRENT)
         toleranceWithLoadVoltage=shared.getFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE,GattAttributes.DEFAULT_TOLERANCE_WITH_LOAD_VOLTAGE)
-        Log.d("testTolerance","no-load V $toleranceNoLoadVoltage, with-load C $toleranceWithLoadCurrent, with-load V $toleranceWithLoadVoltage")
+        Log.d("testprefs","initStandard: TV $targetVoltage, TC $targetCurrent; no-load V $toleranceNoLoadVoltage, with-load C $toleranceWithLoadCurrent, with-load V $toleranceWithLoadVoltage")
     }
 
     private fun menuIconWithText(drawable: Drawable, title: String): CharSequence {
@@ -694,39 +698,48 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
                 return@setOnClickListener
             }
-            targetVoltage=dialog.target_voltage.selectedItem.toString().toInt()
-            targetCurrent=dialog.target_current.selectedItem.toString().toInt()
-            toleranceNoLoadVoltage=dialog.no_load_voltage.selectedItem.toString().toFloat()
-            toleranceWithLoadCurrent=dialog.load_current.selectedItem.toString().toFloat()
-            toleranceWithLoadVoltage=dialog.load_voltage.selectedItem.toString().toFloat()
+            if (isSavingAdvanceSettings) {
+                targetVoltage = dialog.target_voltage.selectedItem.toString().toInt()
+                targetCurrent = dialog.target_current.selectedItem.toString().toInt()
+                toleranceNoLoadVoltage = dialog.no_load_voltage.selectedItem.toString().toFloat()
+                toleranceWithLoadCurrent = dialog.load_current.selectedItem.toString().toFloat()
+                toleranceWithLoadVoltage = dialog.load_voltage.selectedItem.toString().toFloat()
+            }
 
 
             getSharedPreferences("f116_db", MODE_PRIVATE).edit()
                 .putString(GattAttributes.ORDER_SERIAL_2,strOrderSerialTwo)
                 .apply()
 
-            val dbString="F116_$strOrderSerialTwo"
-            getSharedPreferences(dbString, MODE_PRIVATE).edit()
-                    .putString(GattAttributes.ORDER_SERIAL_1,strOrderSerialOne)
-                    .putString(GattAttributes.ORDER_SERIAL_2,strOrderSerialTwo)
+            if (isSavingAdvanceSettings) {
+                val dbString = "F116_$strOrderSerialTwo"
+                getSharedPreferences(dbString, MODE_PRIVATE).edit()
+                    .putString(GattAttributes.ORDER_SERIAL_1, strOrderSerialOne)
+                    .putString(GattAttributes.ORDER_SERIAL_2, strOrderSerialTwo)
                     //.putString(GattAttributes.LOT_NUMBER,strLotNumber)
-                    .putString(GattAttributes.FIRMWARE,strFirmwareVersion)
-                    .putString(GattAttributes.TAG,strTagNumber)
-                    .putString(GattAttributes.DEVICE_ADDRESS,strAddress)
-                    .putString(GattAttributes.METER,strMeter)
-                    .putString(GattAttributes.RSSI_SMALL,strRssiSmall)
-                    .putString(GattAttributes.RSSI_LARGE,strRssiLarge)
-                    .putString(GattAttributes.PRODUCING_TIME,strProducingTime)
-                    .putInt(GattAttributes.TEST_DEP,intTestDepartment)
-                    .putInt(GattAttributes.TARGET_VOLTAGE_TAG,targetVoltage)
-                    .putInt(GattAttributes.TARGET_CURRENT_TAG,targetCurrent)
-                    .putFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE,toleranceNoLoadVoltage)
-                    .putFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT,toleranceWithLoadCurrent)
-                    .putFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE,toleranceWithLoadVoltage)
+                    .putString(GattAttributes.FIRMWARE, strFirmwareVersion)
+                    .putString(GattAttributes.TAG, strTagNumber)
+                    .putString(GattAttributes.DEVICE_ADDRESS, strAddress)
+                    .putString(GattAttributes.METER, strMeter)
+                    .putString(GattAttributes.RSSI_SMALL, strRssiSmall)
+                    .putString(GattAttributes.RSSI_LARGE, strRssiLarge)
+                    .putString(GattAttributes.PRODUCING_TIME, strProducingTime)
+                    .putInt(GattAttributes.TEST_DEP, intTestDepartment)
+                    .putInt(GattAttributes.TARGET_VOLTAGE_TAG, targetVoltage)
+                    .putInt(GattAttributes.TARGET_CURRENT_TAG, targetCurrent)
+                    .putFloat(GattAttributes.TOLERANCE_NO_LOAD_VOLTAGE, toleranceNoLoadVoltage)
+                    .putFloat(GattAttributes.TOLERANCE_WITH_LOAD_CURRENT, toleranceWithLoadCurrent)
+                    .putFloat(GattAttributes.TOLERANCE_WITH_LOAD_VOLTAGE, toleranceWithLoadVoltage)
                     .apply()
+            }
+            Log.d("testprefs","dialog after saved: TV $targetVoltage, TC $targetCurrent; no-load V $toleranceNoLoadVoltage, with-load C $toleranceWithLoadCurrent, with-load V $toleranceWithLoadVoltage")
+
             dialog.dismiss()
             resetAfterSetup(false)
             initStandard()
+            isSavingAdvanceSettings=false
+            Log.d("testprefs","dialog re-init standard: TV $targetVoltage, TC $targetCurrent; no-load V $toleranceNoLoadVoltage, with-load C $toleranceWithLoadCurrent, with-load V $toleranceWithLoadVoltage")
+
         }
 
         dialog.producing_time.setOnClickListener {
@@ -751,6 +764,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             clickCount++
             if (clickCount==7){
                 dialog.expandable_section.visibility=View.VISIBLE
+                isSavingAdvanceSettings=true
                 clickCount=0
             }
         }
@@ -1876,6 +1890,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
                 }
                 return@Thread
             }
+            Log.d("testprefs","makingCSV: TV $targetVoltage, TC $targetCurrent; no-load V $toleranceNoLoadVoltage, with-load C $toleranceWithLoadCurrent, with-load V $toleranceWithLoadVoltage")
 
             ///////////////////////////////////
             val date=SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(System.currentTimeMillis())
